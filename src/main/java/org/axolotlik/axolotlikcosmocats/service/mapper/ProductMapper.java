@@ -8,7 +8,6 @@ import org.axolotlik.axolotlikcosmocats.dto.product.ProductRequestDto;
 import org.axolotlik.axolotlikcosmocats.dto.product.ProductResponseDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.Named;
 
 import java.util.List;
 
@@ -24,8 +23,12 @@ public interface ProductMapper {
     ProductResponseDto toProductResponseDto(Product product);
 
     @Mapping(target = "id", ignore = true) // ID is generated automatically
-    @Mapping(target = "category", source = "category") // category is provided by the service layer
-    Product toProduct(ProductRequestDto dto, Category category);
+    @Mapping(target = "name", source = "name")
+    @Mapping(target = "description", source = "description")
+    @Mapping(target = "price", source = "price")
+    @Mapping(target = "available", source = "available")
+    @Mapping(target = "category", ignore = true) // we will set it later in the service
+    Product toProduct(ProductRequestDto dto);
 
     List<ProductResponseDto> toProductResponseDtoList(List<Product> products);
 
