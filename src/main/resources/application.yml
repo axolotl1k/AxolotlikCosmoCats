@@ -1,0 +1,9 @@
+spring.application.name: AxolotlikCosmoCats
+
+springdoc:
+  swagger-ui:
+    url: /api-specs/market-api-spec.yml
+    disable-swagger-default-url: true
+  api-docs:
+    enabled: false
+
