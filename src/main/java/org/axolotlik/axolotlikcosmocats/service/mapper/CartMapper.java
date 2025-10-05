@@ -10,6 +10,7 @@ import java.util.List;
 
 @Mapper(componentModel = "spring", uses = {ProductMapper.class})
 public interface CartMapper {
+    @Mapping(target = "id", source = "id")
     @Mapping(target = "products", source = "products")
     @Mapping(target = "totalPrice", source = "totalPrice") // uses getTotalPrice() from Cart
     CartResponseDto toCartResponseDto(Cart cart);
