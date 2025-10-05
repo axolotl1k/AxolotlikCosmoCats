@@ -15,27 +15,27 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class CategoryController {
     private final CategoryService categoryService;
-    private final CategoryMapper mapper;
+    private final CategoryMapper categoryMapper;
 
     @GetMapping
     public CategoryListResponseDto getAll() {
-        return mapper.toCategoryListResponseDto(categoryService.getAllCategories());
+        return categoryMapper.toCategoryListResponseDto(categoryService.getAllCategories());
     }
 
     @GetMapping("/{id}")
     public CategoryResponseDto getById(@PathVariable Long id) {
-        return mapper.toCategoryResponseDto(categoryService.getCategoryById(id));
+        return categoryMapper.toCategoryResponseDto(categoryService.getCategoryById(id));
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CategoryResponseDto create(@RequestBody @Valid CategoryRequestDto dto) {
-        return mapper.toCategoryResponseDto(categoryService.createCategory(mapper.toCategory(dto)));
+        return categoryMapper.toCategoryResponseDto(categoryService.createCategory(categoryMapper.toCategory(dto)));
     }
 
     @PutMapping("/{id}")
     public CategoryResponseDto update(@PathVariable Long id, @RequestBody @Valid CategoryRequestDto dto) {
-        return mapper.toCategoryResponseDto(categoryService.updateCategory(id, mapper.toCategory(dto)));
+        return categoryMapper.toCategoryResponseDto(categoryService.updateCategory(id, categoryMapper.toCategory(dto)));
     }
 
     @DeleteMapping("/{id}")

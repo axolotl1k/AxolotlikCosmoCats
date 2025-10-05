@@ -14,27 +14,27 @@ import org.springframework.web.bind.annotation.*;
 public class CartController {
 
     private final CartService cartService;
-    private final CartMapper mapper;
+    private final CartMapper cartMapper;
 
     @GetMapping
     public CartListResponseDto getAll() {
-        return mapper.toCartListResponseDto(cartService.getAllCarts());
+        return cartMapper.toCartListResponseDto(cartService.getAllCarts());
     }
 
     @GetMapping("/{id}")
     public CartResponseDto getById(@PathVariable Long id) {
-        return mapper.toCartResponseDto(cartService.getCartById(id));
+        return cartMapper.toCartResponseDto(cartService.getCartById(id));
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CartResponseDto create(@RequestBody @Valid CartRequestDto dto) {
-        return mapper.toCartResponseDto(cartService.createCart(dto.getProductIds()));
+        return cartMapper.toCartResponseDto(cartService.createCart(dto.getProductIds()));
     }
 
     @PatchMapping("/{id}")
     public CartResponseDto update(@PathVariable Long id, @RequestBody @Valid CartUpdateRequestDto dto) {
-        return mapper.toCartResponseDto(
+        return cartMapper.toCartResponseDto(
                 cartService.updateCartContents(id, dto.getAddProductIds(), dto.getRemoveProductIds()));
     }
 

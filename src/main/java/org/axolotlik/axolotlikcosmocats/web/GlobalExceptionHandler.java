@@ -16,6 +16,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import java.net.URI;
 import java.util.List;
+import java.util.stream.Stream;
 
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
@@ -37,25 +38,39 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             HttpStatusCode status,
             WebRequest request) {
 
-        List<ValidationError> errors = ex.getBindingResult().getFieldErrors().stream()
+        List<ValidationError> fieldErrors = ex.getBindingResult().getFieldErrors().stream()
                 .map(err -> new ValidationError(err.getField(), err.getDefaultMessage()))
+                .toList();
+
+        List<ValidationError> globalErrors = ex.getBindingResult().getGlobalErrors().stream()
+                .map(err -> new ValidationError("object", err.getDefaultMessage()))
+                .toList();
+
+        List<ValidationError> allErrors = Stream.concat(fieldErrors.stream(), globalErrors.stream())
                 .toList();
 
         ProblemDetail detail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
         detail.setTitle("Validation Failed");
         detail.setType(URI.create("validation-error"));
-        detail.setProperty("errors", errors);
+        detail.setProperty("errors", allErrors);
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(detail);
     }
+
 
     // 400 - constraint-level violations (e.g., custom validators)
     @ExceptionHandler(ConstraintViolationException.class)
     ProblemDetail handleConstraintViolation(ConstraintViolationException ex) {
         ProblemDetail detail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+        detail.setType(URI.create("validation-error"));
         detail.setTitle("Validation Failed");
-        detail.setType(URI.create("constraint-violation"));
-        detail.setDetail(ex.getMessage());
+
+        List<String> errors = ex.getConstraintViolations()
+                .stream()
+                .map(v -> v.getPropertyPath() + ": " + v.getMessage())
+                .toList();
+
+        detail.setProperty("errors", errors);
         return detail;
     }
 }

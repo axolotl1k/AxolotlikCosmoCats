@@ -14,27 +14,27 @@ import org.springframework.web.bind.annotation.*;
 public class OrderController {
 
     private final OrderService orderService;
-    private final OrderMapper mapper;
+    private final OrderMapper orderMapper;
 
     @GetMapping
     public OrderListResponseDto getAll() {
-        return mapper.toOrderListResponseDto(orderService.getAllOrders());
+        return orderMapper.toOrderListResponseDto(orderService.getAllOrders());
     }
 
     @GetMapping("/{id}")
     public OrderResponseDto getById(@PathVariable Long id) {
-        return mapper.toOrderResponseDto(orderService.getOrderById(id));
+        return orderMapper.toOrderResponseDto(orderService.getOrderById(id));
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public OrderResponseDto create(@RequestBody @Valid OrderRequestDto dto) {
-        return mapper.toOrderResponseDto(orderService.createOrderFromCart(dto.getCartId()));
+        return orderMapper.toOrderResponseDto(orderService.createOrderFromCart(dto.getCartId()));
     }
 
     @PatchMapping("/{id}")
     public OrderResponseDto updateStatus(@PathVariable Long id, @RequestBody @Valid OrderStatusUpdateRequestDto dto) {
-        return mapper.toOrderResponseDto(orderService.updateOrderStatus(id, dto.getStatus()));
+        return orderMapper.toOrderResponseDto(orderService.updateOrderStatus(id, dto.getStatus()));
     }
 
     @DeleteMapping("/{id}")

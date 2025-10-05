@@ -14,31 +14,31 @@ import org.springframework.web.bind.annotation.*;
 public class ProductController {
 
     private final ProductService productService;
-    private final ProductMapper mapper;
+    private final ProductMapper productMapper;
 
     @GetMapping
     public ProductListResponseDto getAll(@RequestParam(required = false) Long categoryId) {
         return categoryId != null
-                ? mapper.toProductListResponseDto(productService.getProductsByCategory(categoryId))
-                : mapper.toProductListResponseDto(productService.getAllProducts());
+                ? productMapper.toProductListResponseDto(productService.getProductsByCategory(categoryId))
+                : productMapper.toProductListResponseDto(productService.getAllProducts());
     }
 
     @GetMapping("/{id}")
     public ProductResponseDto getById(@PathVariable Long id) {
-        return mapper.toProductResponseDto(productService.getProductById(id));
+        return productMapper.toProductResponseDto(productService.getProductById(id));
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ProductResponseDto create(@RequestBody @Valid ProductRequestDto dto) {
-        return mapper.toProductResponseDto(
-                productService.createProduct(mapper.toProduct(dto), dto.getCategoryId()));
+        return productMapper.toProductResponseDto(
+                productService.createProduct(productMapper.toProduct(dto), dto.getCategoryId()));
     }
 
     @PutMapping("/{id}")
     public ProductResponseDto update(@PathVariable Long id, @RequestBody @Valid ProductRequestDto dto) {
-        return mapper.toProductResponseDto(
-                productService.updateProduct(id, mapper.toProduct(dto), dto.getCategoryId()));
+        return productMapper.toProductResponseDto(
+                productService.updateProduct(id, productMapper.toProduct(dto), dto.getCategoryId()));
     }
 
     @DeleteMapping("/{id}")
