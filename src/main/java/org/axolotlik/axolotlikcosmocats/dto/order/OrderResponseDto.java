@@ -9,8 +9,8 @@ import java.util.List;
 @Value
 @Builder
 public class OrderResponseDto {
-    Long id;
-    List<ProductResponseDto> products;
-    Double totalPrice;
-    String status;
+  Long id;
+  List<ProductResponseDto> products;
+  Double totalPrice;
+  String status;
 }

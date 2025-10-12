@@ -12,7 +12,7 @@ paths:
     get:
       summary: Get all products (optionally filtered by category)
       description: Retrieve all products. If `categoryId` is provided, only products from that category are returned.
-      tags: [Products]
+      tags: [ Products ]
       parameters:
         - name: categoryId
           in: query
@@ -37,7 +37,7 @@ paths:
     post:
       summary: Create a new product
       description: Add a new product to the marketplace under an existing category.
-      tags: [Products]
+      tags: [ Products ]
       requestBody:
         required: true
         content:
@@ -67,7 +67,7 @@ paths:
   /api/v1/products/{id}:
     get:
       summary: Get product by ID
-      tags: [Products]
+      tags: [ Products ]
       parameters:
         - name: id
           in: path
@@ -90,7 +90,7 @@ paths:
 
     put:
       summary: Update product by ID
-      tags: [Products]
+      tags: [ Products ]
       parameters:
         - name: id
           in: path
@@ -127,7 +127,7 @@ paths:
       summary: Delete product by ID
       description: Deletes a product.
         This operation is **idempotent** — returns 204 even if the product does not exist.
-      tags: [Products]
+      tags: [ Products ]
       parameters:
         - name: id
           in: path
@@ -143,7 +143,7 @@ paths:
   /api/v1/categories:
     get:
       summary: Get all categories
-      tags: [Categories]
+      tags: [ Categories ]
       responses:
         '200':
           description: List of all categories.
@@ -154,7 +154,7 @@ paths:
 
     post:
       summary: Create a new category
-      tags: [Categories]
+      tags: [ Categories ]
       requestBody:
         required: true
         content:
@@ -178,7 +178,7 @@ paths:
   /api/v1/categories/{id}:
     get:
       summary: Get category by ID
-      tags: [Categories]
+      tags: [ Categories ]
       parameters:
         - name: id
           in: path
@@ -200,7 +200,7 @@ paths:
 
     put:
       summary: Update category
-      tags: [Categories]
+      tags: [ Categories ]
       parameters:
         - name: id
           in: path
@@ -234,7 +234,7 @@ paths:
 
     delete:
       summary: Delete category
-      tags: [Categories]
+      tags: [ Categories ]
       parameters:
         - name: id
           in: path
@@ -250,7 +250,7 @@ paths:
   /api/v1/orders:
     get:
       summary: Get all orders
-      tags: [Orders]
+      tags: [ Orders ]
       responses:
         '200':
           description: Successfully retrieved orders.
@@ -262,7 +262,7 @@ paths:
     post:
       summary: Create a new order
       description: Place a new order based on an existing cart.
-      tags: [Orders]
+      tags: [ Orders ]
       requestBody:
         required: true
         content:
@@ -292,7 +292,7 @@ paths:
   /api/v1/orders/{id}:
     get:
       summary: Get order by ID
-      tags: [Orders]
+      tags: [ Orders ]
       parameters:
         - name: id
           in: path
@@ -315,7 +315,7 @@ paths:
     patch:
       summary: Update order status
       description: Update the status of an existing order (e.g. from NEW to PAID or CANCELLED).
-      tags: [Orders]
+      tags: [ Orders ]
       parameters:
         - name: id
           in: path
@@ -351,7 +351,7 @@ paths:
 
     delete:
       summary: Delete order
-      tags: [Orders]
+      tags: [ Orders ]
       parameters:
         - name: id
           in: path
@@ -367,7 +367,7 @@ paths:
   /api/v1/carts:
     get:
       summary: Get all carts
-      tags: [Carts]
+      tags: [ Carts ]
       responses:
         '200':
           description: Successfully retrieved carts.
@@ -378,7 +378,7 @@ paths:
 
     post:
       summary: Create a new cart
-      tags: [Carts]
+      tags: [ Carts ]
       requestBody:
         required: true
         content:
@@ -408,7 +408,7 @@ paths:
   /api/v1/carts/{id}:
     get:
       summary: Get cart by ID
-      tags: [Carts]
+      tags: [ Carts ]
       parameters:
         - name: id
           in: path
@@ -431,7 +431,7 @@ paths:
     patch:
       summary: Modify cart contents
       description: Add or remove existing products from a cart.
-      tags: [Carts]
+      tags: [ Carts ]
       parameters:
         - name: id
           in: path
@@ -467,7 +467,7 @@ paths:
 
     delete:
       summary: Delete cart by ID
-      tags: [Carts]
+      tags: [ Carts ]
       parameters:
         - name: id
           in: path
@@ -482,7 +482,7 @@ components:
     # 🛒 PRODUCTS
     ProductRequestDto:
       type: object
-      required: [name, price, categoryId, available]
+      required: [ name, price, categoryId, available ]
       properties:
         name:
           type: string
@@ -535,7 +535,7 @@ components:
     # 🏷️ CATEGORIES
     CategoryRequestDto:
       type: object
-      required: [name]
+      required: [ name ]
       properties:
         name:
           type: string
@@ -568,7 +568,7 @@ components:
     # 📦 ORDERS
     OrderRequestDto:
       type: object
-      required: [cartId]
+      required: [ cartId ]
       properties:
         cartId:
           type: integer
@@ -602,7 +602,7 @@ components:
 
     OrderStatusUpdateRequestDto:
       type: object
-      required: [status]
+      required: [ status ]
       properties:
         status:
           type: string
@@ -615,13 +615,13 @@ components:
     # 🛍️ CARTS
     CartRequestDto:
       type: object
-      required: [productIds]
+      required: [ productIds ]
       properties:
         productIds:
           type: array
           items:
             type: integer
-          example: [1, 3, 7]
+          example: [ 1, 3, 7 ]
           description: List of product IDs to add to the new cart.
 
     CartResponseDto:
@@ -654,13 +654,13 @@ components:
           type: array
           items:
             type: integer
-          example: [2, 3]
+          example: [ 2, 3 ]
           description: List of product IDs to add to the cart.
         removeProductIds:
           type: array
           items:
             type: integer
-          example: [1]
+          example: [ 1 ]
           description: List of product IDs to remove from the cart.
 
 

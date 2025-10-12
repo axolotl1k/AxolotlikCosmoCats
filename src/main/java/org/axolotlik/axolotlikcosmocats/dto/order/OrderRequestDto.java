@@ -7,5 +7,5 @@ import lombok.Value;
 @Value
 @Builder
 public class OrderRequestDto {
-    @NotNull Long cartId;
+  @NotNull Long cartId;
 }

@@ -5,5 +5,4 @@ import org.axolotlik.axolotlikcosmocats.repository.InMemoryRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class ProductRepository extends InMemoryRepository<Product> {
-}
+public class ProductRepository extends InMemoryRepository<Product> {}

@@ -7,6 +7,6 @@ import lombok.Value;
 @Value
 @Builder
 public class CategoryRequestDto {
-    @NotBlank String name;
-    String description;
+  @NotBlank String name;
+  String description;
 }

@@ -8,5 +8,5 @@ import java.util.List;
 @Value
 @Builder
 public class OrderListResponseDto {
-    List<OrderResponseDto> orders;
+  List<OrderResponseDto> orders;
 }

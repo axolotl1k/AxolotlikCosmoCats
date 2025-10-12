@@ -6,13 +6,13 @@ import java.util.List;
 
 public interface OrderService {
 
-    List<Order> getAllOrders();
+  List<Order> getAllOrders();
 
-    Order getOrderById(Long id);
+  Order getOrderById(Long id);
 
-    Order createOrderFromCart(Long cartId);
+  Order createOrderFromCart(Long cartId);
 
-    Order updateOrderStatus(Long id, String newStatus);
+  Order updateOrderStatus(Long id, String newStatus);
 
-    void deleteOrder(Long id);
+  void deleteOrder(Long id);
 }

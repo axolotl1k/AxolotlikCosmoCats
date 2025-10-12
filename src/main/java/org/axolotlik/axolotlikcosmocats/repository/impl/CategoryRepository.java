@@ -5,5 +5,4 @@ import org.axolotlik.axolotlikcosmocats.repository.InMemoryRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class CategoryRepository extends InMemoryRepository<Category> {
-}
+public class CategoryRepository extends InMemoryRepository<Category> {}

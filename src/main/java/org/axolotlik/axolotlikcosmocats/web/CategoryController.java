@@ -14,34 +14,36 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/categories")
 @RequiredArgsConstructor
 public class CategoryController {
-    private final CategoryService categoryService;
-    private final CategoryMapper categoryMapper;
+  private final CategoryService categoryService;
+  private final CategoryMapper categoryMapper;
 
-    @GetMapping
-    public CategoryListResponseDto getAll() {
-        return categoryMapper.toCategoryListResponseDto(categoryService.getAllCategories());
-    }
+  @GetMapping
+  public CategoryListResponseDto getAll() {
+    return categoryMapper.toCategoryListResponseDto(categoryService.getAllCategories());
+  }
 
-    @GetMapping("/{id}")
-    public CategoryResponseDto getById(@PathVariable Long id) {
-        return categoryMapper.toCategoryResponseDto(categoryService.getCategoryById(id));
-    }
+  @GetMapping("/{id}")
+  public CategoryResponseDto getById(@PathVariable Long id) {
+    return categoryMapper.toCategoryResponseDto(categoryService.getCategoryById(id));
+  }
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public CategoryResponseDto create(@RequestBody @Valid CategoryRequestDto dto) {
-        return categoryMapper.toCategoryResponseDto(categoryService.createCategory(categoryMapper.toCategory(dto)));
-    }
+  @PostMapping
+  @ResponseStatus(HttpStatus.CREATED)
+  public CategoryResponseDto create(@RequestBody @Valid CategoryRequestDto dto) {
+    return categoryMapper.toCategoryResponseDto(
+        categoryService.createCategory(categoryMapper.toCategory(dto)));
+  }
 
-    @PutMapping("/{id}")
-    public CategoryResponseDto update(@PathVariable Long id, @RequestBody @Valid CategoryRequestDto dto) {
-        return categoryMapper.toCategoryResponseDto(categoryService.updateCategory(id, categoryMapper.toCategory(dto)));
-    }
+  @PutMapping("/{id}")
+  public CategoryResponseDto update(
+      @PathVariable Long id, @RequestBody @Valid CategoryRequestDto dto) {
+    return categoryMapper.toCategoryResponseDto(
+        categoryService.updateCategory(id, categoryMapper.toCategory(dto)));
+  }
 
-    @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable Long id) {
-        categoryService.deleteCategory(id);
-    }
-
+  @DeleteMapping("/{id}")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void delete(@PathVariable Long id) {
+    categoryService.deleteCategory(id);
+  }
 }

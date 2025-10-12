@@ -8,5 +8,5 @@ import java.util.List;
 @Value
 @Builder
 public class CategoryListResponseDto {
-    List<CategoryResponseDto> categories;
+  List<CategoryResponseDto> categories;
 }

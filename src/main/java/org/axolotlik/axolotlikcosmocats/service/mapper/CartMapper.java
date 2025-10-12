@@ -8,18 +8,18 @@ import org.mapstruct.Mapping;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring", uses = {ProductMapper.class})
+@Mapper(
+    componentModel = "spring",
+    uses = {ProductMapper.class})
 public interface CartMapper {
-    @Mapping(target = "id", source = "id")
-    @Mapping(target = "products", source = "products")
-    @Mapping(target = "totalPrice", source = "totalPrice") // uses getTotalPrice() from Cart
-    CartResponseDto toCartResponseDto(Cart cart);
+  @Mapping(target = "id", source = "id")
+  @Mapping(target = "products", source = "products")
+  @Mapping(target = "totalPrice", source = "totalPrice") // uses getTotalPrice() from Cart
+  CartResponseDto toCartResponseDto(Cart cart);
 
-    List<CartResponseDto> toCartResponseDtoList(List<Cart> carts);
+  List<CartResponseDto> toCartResponseDtoList(List<Cart> carts);
 
-    default CartListResponseDto toCartListResponseDto(List<Cart> carts) {
-        return CartListResponseDto.builder()
-                .carts(toCartResponseDtoList(carts))
-                .build();
-    }
+  default CartListResponseDto toCartListResponseDto(List<Cart> carts) {
+    return CartListResponseDto.builder().carts(toCartResponseDtoList(carts)).build();
+  }
 }

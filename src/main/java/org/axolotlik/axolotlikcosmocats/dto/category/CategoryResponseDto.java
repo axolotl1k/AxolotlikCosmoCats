@@ -6,7 +6,7 @@ import lombok.Value;
 @Value
 @Builder
 public class CategoryResponseDto {
-    Long id;
-    String name;
-    String description;
+  Long id;
+  String name;
+  String description;
 }

@@ -11,8 +11,8 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 public class Order {
-    private Long id;
-    private List<Product> products;
-    private Double totalPrice;
-    private OrderStatus status;
+  private Long id;
+  private List<Product> products;
+  private Double totalPrice;
+  private OrderStatus status;
 }

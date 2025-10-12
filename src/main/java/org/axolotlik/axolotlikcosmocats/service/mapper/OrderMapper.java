@@ -8,19 +8,19 @@ import org.mapstruct.Mapping;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring", uses = { ProductMapper.class })
+@Mapper(
+    componentModel = "spring",
+    uses = {ProductMapper.class})
 public interface OrderMapper {
-    @Mapping(target = "id", source = "id")
-    @Mapping(target = "products", source = "products")
-    @Mapping(target = "totalPrice", source = "totalPrice")
-    @Mapping(target = "status", source = "status")
-    OrderResponseDto toOrderResponseDto(Order order);
+  @Mapping(target = "id", source = "id")
+  @Mapping(target = "products", source = "products")
+  @Mapping(target = "totalPrice", source = "totalPrice")
+  @Mapping(target = "status", source = "status")
+  OrderResponseDto toOrderResponseDto(Order order);
 
-    List<OrderResponseDto> toOrderResponseDtoList(List<Order> orders);
+  List<OrderResponseDto> toOrderResponseDtoList(List<Order> orders);
 
-    default OrderListResponseDto toOrderListResponseDto(List<Order> orders) {
-        return OrderListResponseDto.builder()
-                .orders(toOrderResponseDtoList(orders))
-                .build();
-    }
+  default OrderListResponseDto toOrderListResponseDto(List<Order> orders) {
+    return OrderListResponseDto.builder().orders(toOrderResponseDtoList(orders)).build();
+  }
 }

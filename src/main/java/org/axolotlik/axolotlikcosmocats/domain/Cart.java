@@ -10,11 +10,11 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 public class Cart {
-    private Long id;
-    private List<Product> products;
+  private Long id;
+  private List<Product> products;
 
-    public Double getTotalPrice() {
-        if (products == null || products.isEmpty()) return 0.0;
-        return products.stream().mapToDouble(Product::getPrice).sum();
-    }
+  public Double getTotalPrice() {
+    if (products == null || products.isEmpty()) return 0.0;
+    return products.stream().mapToDouble(Product::getPrice).sum();
+  }
 }

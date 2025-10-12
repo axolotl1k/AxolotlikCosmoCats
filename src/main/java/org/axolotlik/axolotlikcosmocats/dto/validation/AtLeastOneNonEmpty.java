@@ -10,7 +10,9 @@ import java.lang.annotation.*;
 @Constraint(validatedBy = AtLeastOneNonEmptyValidator.class)
 @Documented
 public @interface AtLeastOneNonEmpty {
-    String message() default "At least one of addProductIds or removeProductIds must be non-empty";
-    Class<?>[] groups() default {};
-    Class<? extends Payload>[] payload() default {};
+  String message() default "At least one of addProductIds or removeProductIds must be non-empty";
+
+  Class<?>[] groups() default {};
+
+  Class<? extends Payload>[] payload() default {};
 }

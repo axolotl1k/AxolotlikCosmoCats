@@ -10,7 +10,10 @@ import java.lang.annotation.*;
 @Constraint(validatedBy = CosmicWordCheckValidator.class)
 @Documented
 public @interface CosmicWordCheck {
-    String message() default "Product name must contain at least one cosmic term (e.g. star, galaxy, comet)";
-    Class<?>[] groups() default {};
-    Class<? extends Payload>[] payload() default {};
+  String message() default
+      "Product name must contain at least one cosmic term (e.g. star, galaxy, comet)";
+
+  Class<?>[] groups() default {};
+
+  Class<? extends Payload>[] payload() default {};
 }

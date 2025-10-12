@@ -10,6 +10,6 @@ import java.util.List;
 @Builder
 @AtLeastOneNonEmpty
 public class CartUpdateRequestDto {
-    List<Long> addProductIds;
-    List<Long> removeProductIds;
+  List<Long> addProductIds;
+  List<Long> removeProductIds;
 }
