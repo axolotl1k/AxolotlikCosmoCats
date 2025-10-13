@@ -1,6 +1,6 @@
 package org.axolotlik.axolotlikcosmocats.service.exception;
 
-public class NotFoundException extends RuntimeException {
+public abstract class NotFoundException extends RuntimeException {
   private static final String ID_NOT_FOUND = "%s with id %s not found";
 
   public NotFoundException(String objectType, Long id) {

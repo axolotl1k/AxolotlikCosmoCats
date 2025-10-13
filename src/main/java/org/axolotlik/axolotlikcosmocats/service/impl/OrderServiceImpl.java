@@ -1,5 +1,6 @@
 package org.axolotlik.axolotlikcosmocats.service.impl;
 
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.axolotlik.axolotlikcosmocats.common.OrderStatus;
 import org.axolotlik.axolotlikcosmocats.domain.Cart;
@@ -7,10 +8,9 @@ import org.axolotlik.axolotlikcosmocats.domain.Order;
 import org.axolotlik.axolotlikcosmocats.repository.impl.CartRepository;
 import org.axolotlik.axolotlikcosmocats.repository.impl.OrderRepository;
 import org.axolotlik.axolotlikcosmocats.service.OrderService;
-import org.axolotlik.axolotlikcosmocats.service.exception.NotFoundException;
+import org.axolotlik.axolotlikcosmocats.service.exception.CartNotFoundException;
+import org.axolotlik.axolotlikcosmocats.service.exception.OrderNotFoundException;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -26,13 +26,15 @@ public class OrderServiceImpl implements OrderService {
 
   @Override
   public Order getOrderById(Long id) {
-    return orderRepository.findById(id).orElseThrow(() -> new NotFoundException("Order", id));
+    return orderRepository.findById(id).orElseThrow(() -> new OrderNotFoundException(id));
   }
 
   @Override
   public Order createOrderFromCart(Long cartId) {
     Cart cart =
-        cartRepository.findById(cartId).orElseThrow(() -> new NotFoundException("Cart", cartId));
+        cartRepository
+            .findById(cartId)
+            .orElseThrow(() -> new CartNotFoundException(cartId));
 
     Order order =
         Order.builder()

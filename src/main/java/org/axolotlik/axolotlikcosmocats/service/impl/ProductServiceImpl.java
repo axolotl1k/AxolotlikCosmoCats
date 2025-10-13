@@ -1,15 +1,15 @@
 package org.axolotlik.axolotlikcosmocats.service.impl;
 
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.axolotlik.axolotlikcosmocats.domain.Category;
 import org.axolotlik.axolotlikcosmocats.domain.Product;
 import org.axolotlik.axolotlikcosmocats.repository.impl.CategoryRepository;
 import org.axolotlik.axolotlikcosmocats.repository.impl.ProductRepository;
 import org.axolotlik.axolotlikcosmocats.service.ProductService;
-import org.axolotlik.axolotlikcosmocats.service.exception.NotFoundException;
+import org.axolotlik.axolotlikcosmocats.service.exception.CategoryNotFoundException;
+import org.axolotlik.axolotlikcosmocats.service.exception.ProductNotFoundException;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +28,7 @@ public class ProductServiceImpl implements ProductService {
     Category category =
         categoryRepository
             .findById(categoryId)
-            .orElseThrow(() -> new NotFoundException("Category", categoryId));
+            .orElseThrow(() -> new CategoryNotFoundException(categoryId));
 
     return productRepository.findAll().stream()
         .filter(p -> p.getCategory() != null && p.getCategory().getId().equals(category.getId()))
@@ -37,7 +37,9 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public Product getProductById(Long id) {
-    return productRepository.findById(id).orElseThrow(() -> new NotFoundException("Product", id));
+    return productRepository
+        .findById(id)
+        .orElseThrow(() -> new ProductNotFoundException(id));
   }
 
   @Override
@@ -45,7 +47,7 @@ public class ProductServiceImpl implements ProductService {
     Category category =
         categoryRepository
             .findById(categoryId)
-            .orElseThrow(() -> new NotFoundException("Category", categoryId));
+            .orElseThrow(() -> new CategoryNotFoundException(categoryId));
 
     product.setCategory(category);
     Long id = productRepository.generateId();
@@ -57,13 +59,13 @@ public class ProductServiceImpl implements ProductService {
   @Override
   public Product updateProduct(Long id, Product updated, Long categoryId) {
     if (!productRepository.existsById(id)) {
-      throw new NotFoundException("Product", id);
+      throw new ProductNotFoundException(id);
     }
 
     Category category =
         categoryRepository
             .findById(categoryId)
-            .orElseThrow(() -> new NotFoundException("Category", categoryId));
+            .orElseThrow(() -> new CategoryNotFoundException(categoryId));
 
     updated.setId(id);
     updated.setCategory(category);

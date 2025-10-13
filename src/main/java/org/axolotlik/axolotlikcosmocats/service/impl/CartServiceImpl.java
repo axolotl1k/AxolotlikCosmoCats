@@ -1,18 +1,18 @@
 package org.axolotlik.axolotlikcosmocats.service.impl;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.axolotlik.axolotlikcosmocats.domain.Cart;
 import org.axolotlik.axolotlikcosmocats.domain.Product;
 import org.axolotlik.axolotlikcosmocats.repository.impl.CartRepository;
 import org.axolotlik.axolotlikcosmocats.repository.impl.ProductRepository;
 import org.axolotlik.axolotlikcosmocats.service.CartService;
-import org.axolotlik.axolotlikcosmocats.service.exception.NotFoundException;
+import org.axolotlik.axolotlikcosmocats.service.exception.CartNotFoundException;
+import org.axolotlik.axolotlikcosmocats.service.exception.ProductNotFoundException;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +28,7 @@ public class CartServiceImpl implements CartService {
 
   @Override
   public Cart getCartById(Long id) {
-    return cartRepository.findById(id).orElseThrow(() -> new NotFoundException("Cart", id));
+    return cartRepository.findById(id).orElseThrow(() -> new CartNotFoundException(id));
   }
 
   @Override
@@ -69,7 +69,7 @@ public class CartServiceImpl implements CartService {
         productRepository.findAll().stream().filter(p -> ids.contains(p.getId())).toList();
 
     if (found.size() != ids.size()) {
-      throw new NotFoundException("One or more products not found for IDs: " + ids);
+      throw new ProductNotFoundException("One or more products not found for IDs: " + ids);
     }
     return found;
   }

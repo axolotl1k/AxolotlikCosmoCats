@@ -1,13 +1,12 @@
 package org.axolotlik.axolotlikcosmocats.service.impl;
 
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.axolotlik.axolotlikcosmocats.domain.Category;
 import org.axolotlik.axolotlikcosmocats.repository.impl.CategoryRepository;
 import org.axolotlik.axolotlikcosmocats.service.CategoryService;
-import org.axolotlik.axolotlikcosmocats.service.exception.NotFoundException;
+import org.axolotlik.axolotlikcosmocats.service.exception.CategoryNotFoundException;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -21,7 +20,9 @@ public class CategoryServiceImpl implements CategoryService {
 
   @Override
   public Category getCategoryById(Long id) {
-    return categoryRepository.findById(id).orElseThrow(() -> new NotFoundException("Category", id));
+    return categoryRepository
+        .findById(id)
+        .orElseThrow(() -> new CategoryNotFoundException(id));
   }
 
   @Override
@@ -34,7 +35,7 @@ public class CategoryServiceImpl implements CategoryService {
   @Override
   public Category updateCategory(Long id, Category updatedCategory) {
     if (!categoryRepository.existsById(id)) {
-      throw new NotFoundException("Category", id);
+      throw new CategoryNotFoundException(id);
     }
     updatedCategory.setId(id);
     return categoryRepository.save(id, updatedCategory);
