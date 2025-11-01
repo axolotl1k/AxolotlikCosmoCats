@@ -7,5 +7,6 @@ import lombok.Value;
 @Value
 @Builder
 public class OrderRequestDto {
-  @NotNull Long cartId;
+  @NotNull(message = "must not be null")
+  Long cartId;
 }

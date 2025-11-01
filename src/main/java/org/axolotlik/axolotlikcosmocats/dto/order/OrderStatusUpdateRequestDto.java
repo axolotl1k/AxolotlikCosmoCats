@@ -7,5 +7,6 @@ import lombok.Value;
 @Value
 @Builder
 public class OrderStatusUpdateRequestDto {
-  @NotBlank String status;
+  @NotBlank(message = "must not be blank")
+  String status;
 }
