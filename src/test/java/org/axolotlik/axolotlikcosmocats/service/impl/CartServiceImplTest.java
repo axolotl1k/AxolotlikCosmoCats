@@ -1,6 +1,7 @@
 package org.axolotlik.axolotlikcosmocats.service.impl;
 
 import org.axolotlik.axolotlikcosmocats.domain.Cart;
+import org.axolotlik.axolotlikcosmocats.domain.Category;
 import org.axolotlik.axolotlikcosmocats.domain.Product;
 import org.axolotlik.axolotlikcosmocats.repository.impl.CartRepository;
 import org.axolotlik.axolotlikcosmocats.repository.impl.ProductRepository;
@@ -74,10 +75,13 @@ class CartServiceImplTest {
   }
 
   @Test
-  @DisplayName("should create cart with valid product IDs")
+  @DisplayName("should create cart with valid product IDs and product categories")
   void createCartShouldSaveCart() {
-    Product p1 = new Product(1L, "Toy", "Laser", 10.0, null, true);
-    Product p2 = new Product(2L, "Snack", "Tuna", 5.0, null, true);
+    Category toys = new Category(1L, "Toys", "Cosmic fun");
+    Category food = new Category(2L, "Food", "Space snacks");
+
+    Product p1 = new Product(1L, "Toy", "Laser", 10.0, toys, true);
+    Product p2 = new Product(2L, "Snack", "Tuna", 5.0, food, true);
     List<Long> productIds = List.of(1L, 2L);
 
     when(productRepository.findAll()).thenReturn(List.of(p1, p2));
@@ -92,7 +96,34 @@ class CartServiceImplTest {
 
     assertThat(result.getId()).isEqualTo(10L);
     assertThat(result.getProducts()).hasSize(2);
-    assertThat(result.getProducts().stream().map(Product::getId)).containsExactlyInAnyOrder(1L, 2L);
+
+    List<Product> products =
+        result.getProducts().stream()
+            .sorted(java.util.Comparator.comparing(Product::getId))
+            .toList();
+
+    Product productA = products.get(0);
+    Product productB = products.get(1);
+
+    assertThat(productA.getId()).isEqualTo(1L);
+    assertThat(productA.getName()).isEqualTo("Toy");
+    assertThat(productA.getDescription()).isEqualTo("Laser");
+    assertThat(productA.getPrice()).isEqualTo(10.0);
+    assertThat(productA.isAvailable()).isTrue();
+    assertThat(productA.getCategory()).isNotNull();
+    assertThat(productA.getCategory().getId()).isEqualTo(1L);
+    assertThat(productA.getCategory().getName()).isEqualTo("Toys");
+    assertThat(productA.getCategory().getDescription()).isEqualTo("Cosmic fun");
+
+    assertThat(productB.getId()).isEqualTo(2L);
+    assertThat(productB.getName()).isEqualTo("Snack");
+    assertThat(productB.getDescription()).isEqualTo("Tuna");
+    assertThat(productB.getPrice()).isEqualTo(5.0);
+    assertThat(productB.isAvailable()).isTrue();
+    assertThat(productB.getCategory()).isNotNull();
+    assertThat(productB.getCategory().getId()).isEqualTo(2L);
+    assertThat(productB.getCategory().getName()).isEqualTo("Food");
+    assertThat(productB.getCategory().getDescription()).isEqualTo("Space snacks");
   }
 
   @Test
@@ -111,11 +142,15 @@ class CartServiceImplTest {
   }
 
   @Test
-  @DisplayName("should update cart by adding and removing products")
+  @DisplayName("should update cart by adding and removing products and keep categories")
   void updateCartShouldAddAndRemoveProducts() {
-    Product p1 = new Product(1L, "Toy", "Laser", 10.0, null, true);
-    Product p2 = new Product(2L, "Snack", "Tuna", 5.0, null, true);
-    Product p3 = new Product(3L, "Fish", "Salmon", 12.0, null, true);
+    Category toys = new Category(1L, "Toys", "Cosmic fun");
+    Category food = new Category(2L, "Food", "Space snacks");
+    Category fish = new Category(3L, "Fish", "Deep space sushi");
+
+    Product p1 = new Product(1L, "Toy", "Laser", 10.0, toys, true);
+    Product p2 = new Product(2L, "Snack", "Tuna", 5.0, food, true);
+    Product p3 = new Product(3L, "Fish", "Salmon", 12.0, fish, true);
 
     Cart existing = Cart.builder().id(5L).products(List.of(p1, p2)).build();
 
@@ -132,10 +167,12 @@ class CartServiceImplTest {
     verify(productRepository).findAll();
     verify(cartRepository).save(eq(5L), any(Cart.class));
 
-    List<Product> products = result.getProducts();
-    assertThat(products).hasSize(2);
+    List<Product> products =
+        result.getProducts().stream()
+            .sorted(java.util.Comparator.comparing(Product::getId))
+            .toList();
 
-    products.sort(java.util.Comparator.comparing(Product::getId));
+    assertThat(products).hasSize(2);
 
     Product productA = products.get(0);
     Product productB = products.get(1);
@@ -145,12 +182,20 @@ class CartServiceImplTest {
     assertThat(productA.getDescription()).isEqualTo("Tuna");
     assertThat(productA.getPrice()).isEqualTo(5.0);
     assertThat(productA.isAvailable()).isTrue();
+    assertThat(productA.getCategory()).isNotNull();
+    assertThat(productA.getCategory().getId()).isEqualTo(2L);
+    assertThat(productA.getCategory().getName()).isEqualTo("Food");
+    assertThat(productA.getCategory().getDescription()).isEqualTo("Space snacks");
 
     assertThat(productB.getId()).isEqualTo(3L);
     assertThat(productB.getName()).isEqualTo("Fish");
     assertThat(productB.getDescription()).isEqualTo("Salmon");
     assertThat(productB.getPrice()).isEqualTo(12.0);
     assertThat(productB.isAvailable()).isTrue();
+    assertThat(productB.getCategory()).isNotNull();
+    assertThat(productB.getCategory().getId()).isEqualTo(3L);
+    assertThat(productB.getCategory().getName()).isEqualTo("Fish");
+    assertThat(productB.getCategory().getDescription()).isEqualTo("Deep space sushi");
   }
 
   @Test
