@@ -58,20 +58,4 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(detail);
   }
-
-  // 400 - constraint-level violations (e.g., custom validators)
-  @ExceptionHandler(ConstraintViolationException.class)
-  ProblemDetail handleConstraintViolation(ConstraintViolationException ex) {
-    ProblemDetail detail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
-    detail.setType(URI.create("validation-error"));
-    detail.setTitle("Validation Failed");
-
-    List<String> errors =
-        ex.getConstraintViolations().stream()
-            .map(v -> v.getPropertyPath() + ": " + v.getMessage())
-            .toList();
-
-    detail.setProperty("errors", errors);
-    return detail;
-  }
 }
