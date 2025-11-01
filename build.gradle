@@ -3,6 +3,7 @@ plugins {
     id 'org.springframework.boot' version '3.5.6'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'org.barfuin.gradle.jacocolog' version '3.1.0'
+    id 'eclipse'
 }
 
 group = 'org.axolotlik'
@@ -15,9 +16,26 @@ java {
     }
 }
 
+ext {
+    minimumCoveragePerFile = 0.8
+    filesExcludedFromCoverage = [
+            "**/*Application.*",
+            "**/config/*Configuration.*"
+    ]
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
 repositories {
     mavenCentral()
 }
+
+apply from: "${rootProject.projectDir}/gradle/test.gradle"
+apply from: "${rootProject.projectDir}/gradle/jacoco.gradle"
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -36,7 +54,6 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-testcontainers'
     testImplementation 'org.testcontainers:junit-jupiter'
     testImplementation 'org.assertj:assertj-core:3.24.2'
-    testImplementation "org.wiremock:wiremock-jetty12:3.9.2"
     testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.34'
