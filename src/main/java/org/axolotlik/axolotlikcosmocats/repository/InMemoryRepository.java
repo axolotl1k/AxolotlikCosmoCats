@@ -32,4 +32,8 @@ public abstract class InMemoryRepository<T> {
   public boolean existsById(Long id) {
     return storage.containsKey(id);
   }
+
+  public void clear() {
+    storage.clear();
+  }
 }

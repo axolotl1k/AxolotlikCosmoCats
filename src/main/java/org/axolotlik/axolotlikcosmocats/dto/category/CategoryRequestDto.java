@@ -7,6 +7,8 @@ import lombok.Value;
 @Value
 @Builder
 public class CategoryRequestDto {
-  @NotBlank String name;
+  @NotBlank(message = "must not be blank")
+  String name;
+
   String description;
 }
