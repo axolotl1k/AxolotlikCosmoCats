@@ -9,5 +9,5 @@ import java.util.List;
 @Value
 @Builder
 public class CartRequestDto {
-  @NotEmpty List<Long> productIds;
+  @NotEmpty(message = "must not be empty")  List<Long> productIds;
 }
