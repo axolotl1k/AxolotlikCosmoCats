@@ -4,7 +4,9 @@
 
 ## 📘 Опис
 
-Цей проєкт реалізує REST API для управління товарами на маркетплейсі космічних котиків.
+Цей проєкт реалізує REST API для управління товарами на маркетплейсі космічних котиків 💾.  
+На даному етапі реалізовано базову архітектуру, документацію API через Swagger UI,  
+валидацію вхідних даних (у тому числі кастомну), централізовану обробку помилок і повне тестове покриття.
 
 ---
 
@@ -13,11 +15,13 @@
 - **Java 21**
 - **Spring Boot 3.3.4**
 - **Gradle**
-- **MapStruct** — для мапінгу між доменними об'єктами та DTO
-- **Lombok** — для скорочення коду моделей
-- **Jakarta Bean Validation** — для валідації вхідних даних
-- **Swagger / OpenAPI** — для документування API
-- **JUnit 5**, **AssertJ**, **WireMock**, **Testcontainers** — для тестування
+- **MapStruct** — мапінг між доменними об'єктами та DTO
+- **Lombok** — скорочення шаблонного коду
+- **Jakarta Bean Validation** — валідація вхідних даних
+- **Swagger / OpenAPI** — документація та тестування API
+- **JUnit 5**, **Mockito**, **AssertJ**, **MockMvc**, **Testcontainers**, **WireMock** — для тестування
+- **JaCoCo** — перевірка покриття коду
+- **GitHub Actions** — CI/CD перевірка збірки та тестів
 
 ---
 
@@ -27,17 +31,22 @@
 src/
 ├── main/
 │ ├── java/org/axolotlik/axolotlikcosmocats/
-│ │ ├── common/                             # Загальні утиліти, константи, enum-и
-│ │ ├── config/                             # Конфігураційні класи Spring
+│ │ ├── common/                             # Загальні утиліти, enum-и
+│ │ ├── config/                             # Конфігурації Spring / Swagger
 │ │ ├── domain/                             # Доменні моделі (Product, Category, Order, Cart)
-│ │ ├── dto/                                # DTO об’єкти для обміну даними між рівнями
-│ │ ├── service/                            # Бізнес-логіка (CRUD-операції, сервіси)
-│ │ ├── util/                               # Кастомні валідації, хелпери, спільні методи
-│ │ ├── web/                                # REST контролери, обробники помилок
-│ │ └── AxolotlikCosmoCatsApplication.java  # Головний клас Spring Boot застосунку
+│ │ ├── dto/                                # DTO для вхідних і вихідних даних
+│ │ ├── repository/                         # In-Memory репозиторії для зберігання даних у колекціях
+│ │ ├── service/                            # Бізнес-логіка (CRUD, валідації)
+│ │ ├── util/                               # Кастомні валідації, хелпери
+│ │ ├── web/                                # REST контролери, глобальний обробник помилок
+│ │ └── AxolotlikCosmoCatsApplication.java  # Головний клас застосунку
 │ └── resources/
 │   └── api-specs/                          # Swagger / OpenAPI контракт
-└── test/                                   # Тести (юніт, інтеграційні, WireMock)
+│
+└── test/java/org/axolotlik/axolotlikcosmocats/
+    ├── repository/                         # Unit-тести для InMemoryRepository
+    ├── service/impl/                       # Unit-тести для сервісного шару
+    └── web/                                # Integration-тести для контролерів
 ```
 
 ---
@@ -50,24 +59,127 @@ src/
 
 Після запуску застосунок буде доступний за адресою:
 
-> http://localhost:8080
+> http://localhost:8080/swagger-ui/index.html
 
+---
+
+## ✅ Реалізовано
+
+### 🧱 Архітектура застосунку
+
+- Побудовано трирівневу структуру:
+    - **web** — REST контролери та глобальна обробка помилок
+    - **service** — бізнес-логіка, управління даними
+    - **repository** — власні In-Memory сховища (емуляція бази даних)
+    - **domain** — доменні сутності (Product, Category, Cart, Order)
+    - **dto** — об’єкти для передачі даних між шарами
+
+---
+
+### 🧩 Репозиторії
+
+- Реалізовано **власні In-Memory репозиторії** для роботи без БД (через `Map`).
+- Підтримують CRUD-операції: `save`, `findById`, `findAll`, `update`, `deleteById`.
+- Використовуються сервісним шаром як абстракція доступу до даних.
+
+---
+
+### ⚙️ Сервісний шар
+
+- Реалізовано базові **CRUD-операції** для основних сутностей.
+- Уся логіка роботи з репозиторіями винесена в сервіси.
+
+---
+
+### 🌐 REST API
+
+- Створено контролери для управління сутностями (`/products`, `/categories`, `/orders`, `/carts`).
+- Обробка запитів через **DTO** із валідацією вхідних даних.
+- Реалізовано ендпоінти:
+    - `GET` — отримання списків та окремих об’єктів
+    - `POST` — створення нових ресурсів
+    - `PUT` — оновлення (повне)
+    - `PATCH` — оновлення (часткове)
+    - `DELETE` — видалення
+
+---
+
+### ✅ Валідація
+
+- Підключено **Jakarta Bean Validation** для DTO.
+- Додано **кастомну валідацію** `@AtLeastOneNonEmpty` для `CartUpdateRequestDto`.
+- Додано **кастомну валідацію** `@CosmicWordCheck` для `ProductRequestDto` поля `name`.
+
+---
+
+### 🚨 Обробка помилок
+
+- Створено **глобальний обробник помилок** `GlobalExceptionHandler`.
+- Підтримуються:
+    - `NotFoundException` (404)
+    - `MethodArgumentNotValidException` (400)
+- Формат помилки: `ProblemDetail` із полем `errors` (список порушень валідації).
+
+---
+
+## 🧪 Тестування (Лабораторна 1.2)
+
+- Покриття **unit-тестами всіх сервісів** (Cart, Category, Product, Order)
+- Реалізовано **інтеграційні тести для кожного контролера**:
+- Повна перевірка CRUD-операцій, валідацій і викидання винятків
+- Використано:
+    - **JUnit 5** — основний тестовий фреймворк
+    - **Mockito / @MockBean** — для мокування залежностей
+    - **AssertJ** — розширені асерти для зручності перевірок
+    - **MockMvc** — інтеграційне тестування REST API
+    - **JaCoCo** — збір покриття коду
+    - **Spring Boot Test** — для підйому контексту Spring
+- Загальне покриття коду — **~90%**
+
+---
+
+## 📊 Звіт покриття коду
+
+**IntegrationTestCoverage**
+
+```
+Test Coverage:
+    - Class Coverage: 100%
+    - Method Coverage: 95.3%
+    - Branch Coverage: 66.7%
+    - Line Coverage: 94.2%
+    - Instruction Coverage: 95.1%
+    - Complexity Coverage: 79.6%
+``` 
+
+**TestCoverage**
+
+```
+Test Coverage:
+    - Class Coverage: 100%
+    - Method Coverage: 100%
+    - Branch Coverage: 69.4%
+    - Line Coverage: 96%
+    - Instruction Coverage: 97.5%
+    - Complexity Coverage: 84.5%
+```
+
+---
+
+## ⚙️ Запуск тестів
+
+```bash
+./gradlew clean test
+```
+
+Звіт про покриття:
+
+```
+build/reports/coverage/index.html
+```
 
 ## ✨ Автор
 
-**Студент групи ІО-35 Слюсар Олександр**    
-**💬 [Мій Telegram @axolotlik](https://t.me/axolotlik)**
-
----
-
-## 🧠 Статус
-
-**Лабораторна 1.1:**    
-🔜 Частина 1: API Contract та обробка помилок    
-🔜 Частина 2: Основи Domain-Driven Design (DDD)  
-🔜 Частина 3: CRUD-операції  
-
----
-
-**Лабораторна 1.2:**    
-🔜 Тестування
+**Студент групи ІО-35 — Слюсар Олександр**  
+**💬 Мій Telegram:** [@axolotlik](https://t.me/a_x_o_l_o_t_l)  
+**💻 GitHub:** [axolotl1k](https://github.com/axolotl1k)
