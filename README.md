@@ -181,5 +181,5 @@ build/reports/coverage/index.html
 ## ✨ Автор
 
 **Студент групи ІО-35 — Слюсар Олександр**  
-**💬 [Мій Telegram @axolotlik](https://t.me/a_x_o_l_o_t_l)**  
+**💬 Мій Telegram:** [@axolotlik](https://t.me/a_x_o_l_o_t_l)  
 **💻 GitHub:** [axolotl1k](https://github.com/axolotl1k)
