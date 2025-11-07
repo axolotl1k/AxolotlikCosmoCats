@@ -112,8 +112,8 @@ src/
 
 ## ✨ Автор
 
-**Студент групи ІО-35 — Слюсар Олександр**  
-**💬 [Мій Telegram @axolotlik](https://t.me/axolotlik)**
+**Студент групи ІО-35 Слюсар Олександр**    
+**💬 Мій Telegram:** [@axolotlik](https://t.me/a_x_o_l_o_t_l)  
 
 ---
 
