@@ -189,7 +189,7 @@ build/reports/coverage/index.html
 
 ---
 
-## 🚀 Лабораторна 1.3 — Feature Toggles (Spring AOP)
+## 🚀 Лабораторна 2 — Feature Toggles (Spring AOP)
 
 ### 🎯 Мета
 
