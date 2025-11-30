@@ -3,6 +3,19 @@ spring:
     active: local
   application:
     name: AxolotlikCosmoCats
+  datasource:
+    url: jdbc:postgresql://localhost:5432/cosmocats_db
+    username: postgres
+    password: password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
 
 springdoc:
   swagger-ui:

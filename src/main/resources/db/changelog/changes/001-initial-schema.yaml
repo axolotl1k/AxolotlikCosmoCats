@@ -1,0 +1,142 @@
+databaseChangeLog:
+  # === SEQUENCES ===
+  - changeSet:
+      id: 1-sequences
+      author: axolotlik
+      changes:
+        - createSequence:
+            sequenceName: categories_id_seq
+            incrementBy: 50
+        - createSequence:
+            sequenceName: products_id_seq
+            incrementBy: 50
+        - createSequence:
+            sequenceName: orders_id_seq
+            incrementBy: 50
+        - createSequence:
+            sequenceName: carts_id_seq
+            incrementBy: 50
+
+  # === TABLES ===
+  - changeSet:
+      id: 2-create-tables-base
+      author: axolotlik
+      changes:
+        # Categories
+        - createTable:
+            tableName: categories
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: text
+
+        # Products
+        - createTable:
+            tableName: products
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: text
+              - column:
+                  name: price
+                  type: double
+                  constraints:
+                    nullable: false
+              - column:
+                  name: available
+                  type: boolean
+                  defaultValueBoolean: true
+              - column:
+                  name: category_id
+                  type: bigint
+                  constraints:
+                    foreignKeyName: fk_product_category
+                    references: categories(id)
+
+        # Carts
+        - createTable:
+            tableName: carts
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+
+        # Orders
+        - createTable:
+            tableName: orders
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: total_price
+                  type: double
+              - column:
+                  name: status
+                  type: varchar(50)
+
+        # Many-to-Many: Carts <-> Products
+        - createTable:
+            tableName: carts_products
+            columns:
+              - column:
+                  name: cart_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_cp_cart
+                    references: carts(id)
+              - column:
+                  name: product_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_cp_product
+                    references: products(id)
+
+        # Many-to-Many: Orders <-> Products
+        - createTable:
+            tableName: orders_products
+            columns:
+              - column:
+                  name: order_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_op_order
+                    references: orders(id)
+              - column:
+                  name: product_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_op_product
+                    references: products(id)
