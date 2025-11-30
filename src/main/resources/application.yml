@@ -14,8 +14,8 @@ springdoc:
 
 application:
   feature:
-    cosmo-cats: true
-    kitty-products: false
+    galactic-citizen-registry: true
+    deep-space-marketplace: false
 
 ---
 spring:
@@ -24,4 +24,4 @@ spring:
       on-profile: dev
 application:
   feature:
-    cosmo-cats: false
+    galactic-citizen-registry: false

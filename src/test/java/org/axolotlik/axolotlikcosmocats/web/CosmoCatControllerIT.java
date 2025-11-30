@@ -30,18 +30,18 @@ class CosmoCatControllerIT {
   @Test
   @SneakyThrows
   @DisplayName("should return 200 OK when feature is enabled (GET all cats)")
-  @EnabledFeatureToggle(FeatureToggles.COSMO_CATS)
+  @EnabledFeatureToggle(FeatureToggles.GALACTIC_CITIZEN_REGISTRY)
   void shouldReturn200WhenFeatureEnabled() {
-    mockMvc.perform(get("/api/v1/cosmo-cats")).andExpect(status().isOk());
+    mockMvc.perform(get("/api/v1/galactic-citizen-registry")).andExpect(status().isOk());
   }
 
   @Test
   @SneakyThrows
   @DisplayName("should return 503 with proper error body when feature is disabled (GET all cats)")
-  @DisabledFeatureToggle(FeatureToggles.COSMO_CATS)
+  @DisabledFeatureToggle(FeatureToggles.GALACTIC_CITIZEN_REGISTRY)
   void shouldReturn503WhenFeatureDisabled() {
     mockMvc
-        .perform(get("/api/v1/cosmo-cats"))
+        .perform(get("/api/v1/galactic-citizen-registry"))
         .andExpect(status().isServiceUnavailable())
         .andExpect(jsonPath("$.status").value(503))
         .andExpect(jsonPath("$.title").value("Feature Unavailable"))
@@ -49,26 +49,26 @@ class CosmoCatControllerIT {
             jsonPath("$.detail")
                 .value(
                     String.format(
-                        FeatureNotAvailableException.FEATURE_NOT_AVAILABLE, "cosmo-cats")))
-        .andExpect(jsonPath("$.instance").value("/api/v1/cosmo-cats"));
+                        FeatureNotAvailableException.FEATURE_NOT_AVAILABLE, "galactic-citizen-registry")))
+        .andExpect(jsonPath("$.instance").value("/api/v1/galactic-citizen-registry"));
   }
 
   @Test
   @SneakyThrows
   @DisplayName("should return 200 OK when getting specific cat and feature is enabled")
-  @EnabledFeatureToggle(FeatureToggles.COSMO_CATS)
+  @EnabledFeatureToggle(FeatureToggles.GALACTIC_CITIZEN_REGISTRY)
   void shouldReturn200WhenGettingSpecificCatFeatureEnabled() {
-    mockMvc.perform(get("/api/v1/cosmo-cats/{name}", "Luna")).andExpect(status().isOk());
+    mockMvc.perform(get("/api/v1/galactic-citizen-registry/{name}", "Luna")).andExpect(status().isOk());
   }
 
   @Test
   @SneakyThrows
   @DisplayName(
       "should return 503 with proper error body when getting specific cat and feature is disabled")
-  @DisabledFeatureToggle(FeatureToggles.COSMO_CATS)
+  @DisabledFeatureToggle(FeatureToggles.GALACTIC_CITIZEN_REGISTRY)
   void shouldReturn503WhenGettingSpecificCatFeatureDisabled() {
     mockMvc
-        .perform(get("/api/v1/cosmo-cats/{name}", "Luna"))
+        .perform(get("/api/v1/galactic-citizen-registry/{name}", "Luna"))
         .andExpect(status().isServiceUnavailable())
         .andExpect(jsonPath("$.status").value(503))
         .andExpect(jsonPath("$.title").value("Feature Unavailable"))
@@ -76,23 +76,23 @@ class CosmoCatControllerIT {
             jsonPath("$.detail")
                 .value(
                     String.format(
-                        FeatureNotAvailableException.FEATURE_NOT_AVAILABLE, "cosmo-cats")))
-        .andExpect(jsonPath("$.instance").value("/api/v1/cosmo-cats/Luna"));
+                        FeatureNotAvailableException.FEATURE_NOT_AVAILABLE, "galactic-citizen-registry")))
+        .andExpect(jsonPath("$.instance").value("/api/v1/galactic-citizen-registry/Luna"));
   }
 
   @Test
   @SneakyThrows
   @DisplayName("should return 404 with proper error body when cat not found and feature is enabled")
-  @EnabledFeatureToggle(FeatureToggles.COSMO_CATS)
+  @EnabledFeatureToggle(FeatureToggles.GALACTIC_CITIZEN_REGISTRY)
   void shouldReturn404WhenCatNotFoundAndFeatureEnabled() {
     mockMvc
-        .perform(get("/api/v1/cosmo-cats/{name}", "Unknown"))
+        .perform(get("/api/v1/galactic-citizen-registry/{name}", "Unknown"))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.status").value(404))
         .andExpect(jsonPath("$.title").value("Resource Not Found"))
         .andExpect(
             jsonPath("$.detail")
                 .value(String.format(CatNotFoundException.NAME_NOT_FOUND, "Cat", "Unknown")))
-        .andExpect(jsonPath("$.instance").value("/api/v1/cosmo-cats/Unknown"));
+        .andExpect(jsonPath("$.instance").value("/api/v1/galactic-citizen-registry/Unknown"));
   }
 }
