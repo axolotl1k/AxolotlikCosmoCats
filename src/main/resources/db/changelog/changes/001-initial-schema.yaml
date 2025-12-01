@@ -101,7 +101,7 @@ databaseChangeLog:
                   type: double
               - column:
                   name: status
-                  type: varchar(50)
+                  type: smallint
 
         # Many-to-Many: Carts <-> Products
         - createTable:
