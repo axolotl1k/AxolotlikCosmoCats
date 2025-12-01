@@ -21,7 +21,8 @@ ext {
     filesExcludedFromCoverage = [
             "**/*Application.*",
             "**/config/*Config*",
-            "**/config/*Properties.*"
+            "**/config/*Properties.*",
+            "**/service/mapper/*Impl.*"
     ]
 }
 
