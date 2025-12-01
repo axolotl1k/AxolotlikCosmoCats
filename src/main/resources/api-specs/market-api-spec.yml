@@ -360,6 +360,30 @@ paths:
       responses:
         '204':
           description: Order deleted successfully (idempotent).
+  /api/v1/orders/stats/top:
+    get:
+      summary: Get top selling products report
+      description: >
+        Returns a list of best-selling products based on order history.  
+        Useful for generating analytical reports.
+      tags: [ Orders ]
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 5
+          description: Maximum number of products to return (default is 5).
+      responses:
+        '200':
+          description: Report generated successfully.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductSalesStatsResponseDto'
 
   # ==============================
   # 🛍️ CARTS
@@ -674,6 +698,19 @@ components:
             New status of the order.  
             Allowed values: NEW, PROCESSING, PAID, CANCELLED, COMPLETED.
 
+    ProductSalesStatsResponseDto:
+      type: object
+      description: "Data transfer object for sales statistics report"
+      properties:
+        productName:
+          type: string
+          example: "Cosmic Tuna"
+          description: "Name of the product"
+        salesCount:
+          type: integer
+          format: int64
+          example: 42
+          description: "Total number of times this product has been ordered"
 
     # 🛍️ CARTS
     CartRequestDto:

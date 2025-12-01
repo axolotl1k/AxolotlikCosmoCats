@@ -3,10 +3,13 @@ package org.axolotlik.axolotlikcosmocats.web;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.axolotlik.axolotlikcosmocats.dto.order.*;
+import org.axolotlik.axolotlikcosmocats.repository.projection.ProductSalesStats;
 import org.axolotlik.axolotlikcosmocats.service.OrderService;
 import org.axolotlik.axolotlikcosmocats.service.mapper.OrderMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/orders")
@@ -42,5 +45,11 @@ public class OrderController {
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void delete(@PathVariable Long id) {
     orderService.deleteOrder(id);
+  }
+
+  @GetMapping("/stats/top")
+  public List<ProductSalesStatsDto> getTopSellingReport(
+      @RequestParam(defaultValue = "5") int limit) {
+    return orderMapper.toSalesStatsDtoList(orderService.getTopSellingProducts(limit));
   }
 }

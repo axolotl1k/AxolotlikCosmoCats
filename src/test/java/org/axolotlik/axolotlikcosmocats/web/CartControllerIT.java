@@ -2,37 +2,40 @@ package org.axolotlik.axolotlikcosmocats.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
-import org.axolotlik.axolotlikcosmocats.domain.Cart;
-import org.axolotlik.axolotlikcosmocats.domain.Category;
-import org.axolotlik.axolotlikcosmocats.domain.Product;
+import org.axolotlik.axolotlikcosmocats.AbstractIT;
 import org.axolotlik.axolotlikcosmocats.dto.cart.CartRequestDto;
 import org.axolotlik.axolotlikcosmocats.dto.cart.CartUpdateRequestDto;
 import org.axolotlik.axolotlikcosmocats.dto.validation.AtLeastOneNonEmpty;
-import org.axolotlik.axolotlikcosmocats.repository.impl.CartRepository;
-import org.axolotlik.axolotlikcosmocats.repository.impl.CategoryRepository;
-import org.axolotlik.axolotlikcosmocats.repository.impl.ProductRepository;
+import org.axolotlik.axolotlikcosmocats.repository.CartRepository;
+import org.axolotlik.axolotlikcosmocats.repository.CategoryRepository;
+import org.axolotlik.axolotlikcosmocats.repository.ProductRepository;
+import org.axolotlik.axolotlikcosmocats.repository.entity.CartEntity;
+import org.axolotlik.axolotlikcosmocats.repository.entity.CategoryEntity;
+import org.axolotlik.axolotlikcosmocats.repository.entity.ProductEntity;
 import org.axolotlik.axolotlikcosmocats.service.CartService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.axolotlik.axolotlikcosmocats.service.exception.NotFoundException.ID_NOT_FOUND;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
 @AutoConfigureMockMvc
 @DisplayName("CartController integration tests")
-class CartControllerIT {
+class CartControllerIT extends AbstractIT {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private ObjectMapper objectMapper;
@@ -44,80 +47,84 @@ class CartControllerIT {
   @BeforeEach
   void setUp() {
     reset(cartService);
-    cartRepository.clear();
-    productRepository.clear();
-    categoryRepository.clear();
+    cartRepository.deleteAll();
+    productRepository.deleteAll();
+    categoryRepository.deleteAll();
   }
 
   @Test
   @SneakyThrows
   @DisplayName("should get all carts (200 OK)")
   void shouldGetAllCarts() {
-    Category category = new Category(1L, "Food", "Space snacks");
-    categoryRepository.save(1L, category);
+    var category =
+        categoryRepository.save(
+            new CategoryEntity(null, "Food", "Space snacks", new ArrayList<>()));
 
-    Product p1 = new Product(1L, "Cosmic Tuna", "Tasty", 5.0, category, true);
-    Product p2 = new Product(2L, "Star Drink", "Energy", 3.0, category, true);
-    productRepository.save(1L, p1);
-    productRepository.save(2L, p2);
+    var p1 =
+        productRepository.save(
+            new ProductEntity(null, "Cosmic Tuna", "Tasty", 5.0, true, category));
+    var p2 =
+        productRepository.save(
+            new ProductEntity(null, "Star Drink", "Energy", 3.0, true, category));
 
-    cartRepository.save(1L, new Cart(1L, List.of(p1, p2)));
-    cartRepository.save(2L, new Cart(2L, List.of(p2)));
+    cartRepository.save(new CartEntity(null, List.of(p1, p2)));
+    cartRepository.save(new CartEntity(null, List.of(p2)));
 
     mockMvc
         .perform(get("/api/v1/carts"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.carts").isArray())
         .andExpect(jsonPath("$.carts.length()").value(2))
-
-        .andExpect(jsonPath("$.carts[0].id").value(1))
         .andExpect(jsonPath("$.carts[0].products.length()").value(2))
-        .andExpect(jsonPath("$.carts[0].products[0].id").value(1))
+        .andExpect(jsonPath("$.carts[0].products[0].id").value(p1.getId()))
         .andExpect(jsonPath("$.carts[0].products[0].name").value("Cosmic Tuna"))
         .andExpect(jsonPath("$.carts[0].products[0].description").value("Tasty"))
         .andExpect(jsonPath("$.carts[0].products[0].price").value(5.0))
         .andExpect(jsonPath("$.carts[0].products[0].available").value(true))
-        .andExpect(jsonPath("$.carts[0].products[0].category.id").value(1))
+        .andExpect(jsonPath("$.carts[0].products[0].category.id").value(category.getId()))
         .andExpect(jsonPath("$.carts[0].products[0].category.name").value("Food"))
         .andExpect(jsonPath("$.carts[0].products[0].category.description").value("Space snacks"))
 
-        .andExpect(jsonPath("$.carts[1].id").value(2))
         .andExpect(jsonPath("$.carts[1].products.length()").value(1))
-        .andExpect(jsonPath("$.carts[1].products[0].id").value(2))
+        .andExpect(jsonPath("$.carts[1].products[0].id").value(p2.getId()))
         .andExpect(jsonPath("$.carts[1].products[0].name").value("Star Drink"))
         .andExpect(jsonPath("$.carts[1].products[0].description").value("Energy"))
         .andExpect(jsonPath("$.carts[1].products[0].price").value(3.0))
         .andExpect(jsonPath("$.carts[1].products[0].available").value(true))
-        .andExpect(jsonPath("$.carts[1].products[0].category.id").value(1))
+        .andExpect(jsonPath("$.carts[1].products[0].category.id").value(category.getId()))
         .andExpect(jsonPath("$.carts[1].products[0].category.name").value("Food"))
         .andExpect(jsonPath("$.carts[1].products[0].category.description").value("Space snacks"));
+
+    verify(cartService).getAllCarts();
   }
 
   @Test
   @SneakyThrows
   @DisplayName("should get cart by id (200 OK)")
   void shouldGetCartById() {
-    Category category = new Category(1L, "Supplies", "Space tools");
-    categoryRepository.save(1L, category);
-    Product p1 = new Product(1L, "Cosmic Wrench", "Tools for ships", 20.0, category, true);
-    productRepository.save(1L, p1);
-
-    Cart cart = new Cart(1L, List.of(p1));
-    cartRepository.save(1L, cart);
+    var category =
+        categoryRepository.save(
+            new CategoryEntity(null, "Supplies", "Space tools", new ArrayList<>()));
+    var p1 =
+        productRepository.save(
+            new ProductEntity(null, "Cosmic Wrench", "Tools for ships", 20.0, true, category));
+    var cart = cartRepository.save(new CartEntity(null, List.of(p1)));
 
     mockMvc
-        .perform(get("/api/v1/carts/{id}", 1L))
+        .perform(get("/api/v1/carts/{id}", cart.getId()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.id").value(1))
+        .andExpect(jsonPath("$.id").value(cart.getId()))
         .andExpect(jsonPath("$.products.length()").value(1))
-        .andExpect(jsonPath("$.products[0].id").value(1))
+        .andExpect(jsonPath("$.products[0].id").value(p1.getId()))
         .andExpect(jsonPath("$.products[0].name").value("Cosmic Wrench"))
         .andExpect(jsonPath("$.products[0].description").value("Tools for ships"))
         .andExpect(jsonPath("$.products[0].price").value(20.0))
         .andExpect(jsonPath("$.products[0].available").value(true))
-        .andExpect(jsonPath("$.products[0].category.id").value(1))
+        .andExpect(jsonPath("$.products[0].category.id").value(category.getId()))
         .andExpect(jsonPath("$.products[0].category.name").value("Supplies"))
         .andExpect(jsonPath("$.products[0].category.description").value("Space tools"));
+
+    verify(cartService).getCartById(cart.getId());
   }
 
   @Test
@@ -131,20 +138,26 @@ class CartControllerIT {
         .andExpect(jsonPath("$.title").value("Resource Not Found"))
         .andExpect(jsonPath("$.type").value("not-found"))
         .andExpect(jsonPath("$.detail").value(String.format(ID_NOT_FOUND, "Cart", id)));
+
+    verify(cartService).getCartById(id);
   }
 
   @Test
   @SneakyThrows
   @DisplayName("should create cart (201 Created)")
   void shouldCreateCart() {
-    Category cat = new Category(1L, "Food", "Space snacks");
-    categoryRepository.save(1L, cat);
-    Product p1 = new Product(1L, "Cosmic Fish", "Star flavor", 10.0, cat, true);
-    Product p2 = new Product(2L, "Galaxy Snack", "Energy bites", 5.0, cat, true);
-    productRepository.save(1L, p1);
-    productRepository.save(2L, p2);
+    var cat =
+        categoryRepository.save(
+            new CategoryEntity(null, "Food", "Space snacks", new ArrayList<>()));
+    var p1 =
+        productRepository.save(
+            new ProductEntity(null, "Cosmic Fish", "Star flavor", 10.0, true, cat));
+    var p2 =
+        productRepository.save(
+            new ProductEntity(null, "Galaxy Snack", "Energy bites", 5.0, true, cat));
 
-    CartRequestDto request = CartRequestDto.builder().productIds(List.of(1L, 2L)).build();
+    CartRequestDto request =
+        CartRequestDto.builder().productIds(List.of(p1.getId(), p2.getId())).build();
 
     mockMvc
         .perform(
@@ -154,22 +167,22 @@ class CartControllerIT {
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.id").isNumber())
         .andExpect(jsonPath("$.products.length()").value(2))
-
-        .andExpect(jsonPath("$.products[0].id").value(1))
+        .andExpect(jsonPath("$.products[0].id").value(p1.getId()))
         .andExpect(jsonPath("$.products[0].name").value("Cosmic Fish"))
         .andExpect(jsonPath("$.products[0].description").value("Star flavor"))
         .andExpect(jsonPath("$.products[0].price").value(10.0))
         .andExpect(jsonPath("$.products[0].available").value(true))
-        .andExpect(jsonPath("$.products[0].category.id").value(1))
+        .andExpect(jsonPath("$.products[0].category.id").value(cat.getId()))
         .andExpect(jsonPath("$.products[0].category.name").value("Food"))
-
-        .andExpect(jsonPath("$.products[1].id").value(2))
+        .andExpect(jsonPath("$.products[1].id").value(p2.getId()))
         .andExpect(jsonPath("$.products[1].name").value("Galaxy Snack"))
         .andExpect(jsonPath("$.products[1].description").value("Energy bites"))
         .andExpect(jsonPath("$.products[1].price").value(5.0))
         .andExpect(jsonPath("$.products[1].available").value(true))
-        .andExpect(jsonPath("$.products[1].category.id").value(1))
+        .andExpect(jsonPath("$.products[1].category.id").value(cat.getId()))
         .andExpect(jsonPath("$.products[1].category.name").value("Food"));
+
+    verify(cartService).createCart(any());
   }
 
   @Test
@@ -194,60 +207,60 @@ class CartControllerIT {
   @SneakyThrows
   @DisplayName("should update cart contents (200 OK)")
   void shouldUpdateCart() {
-    Category cat = new Category(1L, "Supplies", "Space tools");
-    categoryRepository.save(1L, cat);
-    Product p1 = new Product(1L, "Tool A", "Basic", 5.0, cat, true);
-    Product p2 = new Product(2L, "Tool B", "Better", 6.0, cat, true);
-    Product p3 = new Product(3L, "Tool C", "Best", 7.0, cat, true);
-    productRepository.save(1L, p1);
-    productRepository.save(2L, p2);
-    productRepository.save(3L, p3);
+    var cat =
+        categoryRepository.save(
+            new CategoryEntity(null, "Supplies", "Space tools", new ArrayList<>()));
 
-    Cart cart = new Cart(1L, List.of(p1, p2));
-    cartRepository.save(1L, cart);
+    var p1 = productRepository.save(new ProductEntity(null, "Tool A", "Basic", 5.0, true, cat));
+    var p2 = productRepository.save(new ProductEntity(null, "Tool B", "Better", 6.0, true, cat));
+    var p3 = productRepository.save(new ProductEntity(null, "Tool C", "Best", 7.0, true, cat));
+
+    var cart = cartRepository.save(new CartEntity(null, List.of(p1, p2)));
 
     CartUpdateRequestDto update =
         CartUpdateRequestDto.builder()
-            .addProductIds(List.of(3L))
-            .removeProductIds(List.of(1L))
+            .addProductIds(List.of(p3.getId()))
+            .removeProductIds(List.of(p1.getId()))
             .build();
 
     mockMvc
         .perform(
-            patch("/api/v1/carts/{id}", 1L)
+            patch("/api/v1/carts/{id}", cart.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(update)))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.id").value(1))
+        .andExpect(jsonPath("$.id").value(cart.getId()))
         .andExpect(jsonPath("$.products.length()").value(2))
-        .andExpect(jsonPath("$.products[0].id").value(2))
+        .andExpect(jsonPath("$.products[0].id").value(p2.getId()))
         .andExpect(jsonPath("$.products[0].name").value("Tool B"))
         .andExpect(jsonPath("$.products[0].description").value("Better"))
         .andExpect(jsonPath("$.products[0].price").value(6.0))
-        .andExpect(jsonPath("$.products[1].id").value(3))
+        .andExpect(jsonPath("$.products[1].id").value(p3.getId()))
         .andExpect(jsonPath("$.products[1].name").value("Tool C"))
         .andExpect(jsonPath("$.products[1].description").value("Best"))
         .andExpect(jsonPath("$.products[1].price").value(7.0));
+
+    verify(cartService).updateCartContents(eq(cart.getId()), any(), any());
   }
 
   @Test
   @SneakyThrows
   @DisplayName("should return 400 when no add/remove product ids provided")
   void shouldReturnBadRequestForEmptyUpdateRequest() {
+    var cart = cartRepository.save(new CartEntity(null, new ArrayList<>()));
+
     CartUpdateRequestDto invalid =
         CartUpdateRequestDto.builder().addProductIds(null).removeProductIds(null).build();
 
     mockMvc
         .perform(
-            patch("/api/v1/carts/{id}", 1L)
+            patch("/api/v1/carts/{id}", cart.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(invalid)))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.title").value("Validation Failed"))
         .andExpect(jsonPath("$.type").value("validation-error"))
-        .andExpect(
-            jsonPath("$.errors[0].reason")
-                .value(AtLeastOneNonEmpty.DEFAULT_MESSAGE));
+        .andExpect(jsonPath("$.errors[0].reason").value(AtLeastOneNonEmpty.DEFAULT_MESSAGE));
   }
 
   @Test
@@ -265,20 +278,23 @@ class CartControllerIT {
         .andExpect(jsonPath("$.title").value("Resource Not Found"))
         .andExpect(jsonPath("$.type").value("not-found"))
         .andExpect(jsonPath("$.detail").value(String.format(ID_NOT_FOUND, "Cart", 55L)));
+
+    verify(cartService).updateCartContents(eq(55L), any(), any());
   }
 
   @Test
   @SneakyThrows
   @DisplayName("should delete cart (204 No Content)")
   void shouldDeleteCart() {
-    Category cat = new Category(1L, "Supplies", "Tools");
-    categoryRepository.save(1L, cat);
-    Product p1 = new Product(1L, "Old Tool", "Remove me", 4.0, cat, true);
-    productRepository.save(1L, p1);
+    var cat =
+        categoryRepository.save(new CategoryEntity(null, "Supplies", "Tools", new ArrayList<>()));
+    var p1 =
+        productRepository.save(new ProductEntity(null, "Old Tool", "Remove me", 4.0, true, cat));
 
-    Cart cart = new Cart(1L, List.of(p1));
-    cartRepository.save(1L, cart);
+    var cart = cartRepository.save(new CartEntity(null, List.of(p1)));
 
-    mockMvc.perform(delete("/api/v1/carts/{id}", 1L)).andExpect(status().isNoContent());
+    mockMvc.perform(delete("/api/v1/carts/{id}", cart.getId())).andExpect(status().isNoContent());
+
+    verify(cartService).deleteCart(cart.getId());
   }
 }

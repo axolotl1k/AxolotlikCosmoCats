@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import lombok.SneakyThrows;
+import org.axolotlik.axolotlikcosmocats.AbstractIT;
 import org.axolotlik.axolotlikcosmocats.featuretoggle.FeatureToggleExtension;
 import org.axolotlik.axolotlikcosmocats.featuretoggle.FeatureToggles;
 import org.axolotlik.axolotlikcosmocats.featuretoggle.annotation.DisabledFeatureToggle;
@@ -19,11 +20,10 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 
-@SpringBootTest
 @AutoConfigureMockMvc
 @DisplayName("Integration tests for CosmoCatsController")
 @ExtendWith(FeatureToggleExtension.class)
-class CosmoCatControllerIT {
+class CosmoCatControllerIT extends AbstractIT {
 
   @Autowired private MockMvc mockMvc;
 

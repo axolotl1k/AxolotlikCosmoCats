@@ -1,26 +1,34 @@
 package org.axolotlik.axolotlikcosmocats.service.impl;
 
 import org.axolotlik.axolotlikcosmocats.common.OrderStatus;
-import org.axolotlik.axolotlikcosmocats.domain.Cart;
-import org.axolotlik.axolotlikcosmocats.domain.Category;
 import org.axolotlik.axolotlikcosmocats.domain.Order;
 import org.axolotlik.axolotlikcosmocats.domain.Product;
-import org.axolotlik.axolotlikcosmocats.repository.impl.CartRepository;
-import org.axolotlik.axolotlikcosmocats.repository.impl.OrderRepository;
+import org.axolotlik.axolotlikcosmocats.repository.CartRepository;
+import org.axolotlik.axolotlikcosmocats.repository.OrderRepository;
+import org.axolotlik.axolotlikcosmocats.repository.entity.CartEntity;
+import org.axolotlik.axolotlikcosmocats.repository.entity.OrderEntity;
+import org.axolotlik.axolotlikcosmocats.repository.entity.ProductEntity;
+import org.axolotlik.axolotlikcosmocats.repository.projection.ProductSalesStats;
 import org.axolotlik.axolotlikcosmocats.service.exception.CartNotFoundException;
 import org.axolotlik.axolotlikcosmocats.service.exception.OrderNotFoundException;
+import org.axolotlik.axolotlikcosmocats.service.mapper.OrderMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.axolotlik.axolotlikcosmocats.service.exception.NotFoundException.ID_NOT_FOUND;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest(classes = {OrderServiceImpl.class})
 @DisplayName("OrderServiceImpl tests")
@@ -29,17 +37,21 @@ class OrderServiceImplTest {
   @MockBean private OrderRepository orderRepository;
 
   @MockBean private CartRepository cartRepository;
+  @MockBean private OrderMapper orderMapper;
 
   @Autowired private OrderServiceImpl orderService;
 
   @Test
   @DisplayName("should return all orders")
   void getAllOrdersShouldReturnList() {
-    List<Order> orders =
+    List<OrderEntity> entities = List.of(new OrderEntity(), new OrderEntity());
+    List<Order> domains =
         List.of(
             Order.builder().id(1L).status(OrderStatus.NEW).build(),
             Order.builder().id(2L).status(OrderStatus.PROCESSING).build());
-    when(orderRepository.findAll()).thenReturn(orders);
+
+    when(orderRepository.findAll()).thenReturn(entities);
+    when(orderMapper.toDomainList(entities)).thenReturn(domains);
 
     List<Order> result = orderService.getAllOrders();
 
@@ -55,8 +67,12 @@ class OrderServiceImplTest {
   @Test
   @DisplayName("should return order by id when exists")
   void getOrderByIdShouldReturnOrder() {
-    Order order = Order.builder().id(5L).status(OrderStatus.NEW).totalPrice(100.0).build();
-    when(orderRepository.findById(5L)).thenReturn(Optional.of(order));
+    OrderEntity entity = new OrderEntity();
+    entity.setId(5L);
+    Order domain = Order.builder().id(5L).status(OrderStatus.NEW).totalPrice(100.0).build();
+
+    when(orderRepository.findById(5L)).thenReturn(Optional.of(entity));
+    when(orderMapper.toDomain(entity)).thenReturn(domain);
 
     Order result = orderService.getOrderById(5L);
 
@@ -80,59 +96,49 @@ class OrderServiceImplTest {
   }
 
   @Test
-  @DisplayName("should create order from existing cart and preserve product categories")
+  @DisplayName("should create order from existing cart")
   void createOrderFromCartShouldWorkProperly() {
-    Category toys = new Category(1L, "Toys", "Cosmic entertainment");
-    Category food = new Category(2L, "Food", "Space snacks");
+    ProductEntity p1 = new ProductEntity();
+    p1.setId(1L);
+    p1.setPrice(10.0);
+    ProductEntity p2 = new ProductEntity();
+    p2.setId(2L);
+    p2.setPrice(5.0);
 
-    Product p1 = new Product(1L, "Toy", "Laser", 10.0, toys, true);
-    Product p2 = new Product(2L, "Snack", "Tuna", 5.0, food, true);
+    CartEntity cartEntity = new CartEntity();
+    cartEntity.setId(3L);
+    cartEntity.setProducts(List.of(p1, p2));
 
-    Cart cart = Cart.builder().id(3L).products(List.of(p1, p2)).build();
+    OrderEntity savedOrderEntity = new OrderEntity();
+    savedOrderEntity.setId(10L);
 
-    when(cartRepository.findById(3L)).thenReturn(Optional.of(cart));
-    when(orderRepository.generateId()).thenReturn(10L);
-    when(orderRepository.save(eq(10L), any(Order.class))).thenAnswer(inv -> inv.getArgument(1));
+    Product dp1 = new Product(1L, "Toy", "Laser", 10.0, null, true);
+    Product dp2 = new Product(2L, "Snack", "Tuna", 5.0, null, true);
+    Order resultDomain =
+        Order.builder()
+            .id(10L)
+            .products(List.of(dp1, dp2))
+            .totalPrice(15.0)
+            .status(OrderStatus.NEW)
+            .build();
+
+    when(cartRepository.findById(3L)).thenReturn(Optional.of(cartEntity));
+    when(orderRepository.save(any(OrderEntity.class))).thenReturn(savedOrderEntity);
+    when(orderMapper.toDomain(savedOrderEntity)).thenReturn(resultDomain);
 
     Order result = orderService.createOrderFromCart(3L);
 
-    verify(cartRepository).findById(3L);
-    verify(orderRepository).generateId();
-    verify(cartRepository).deleteById(3L);
-    verify(orderRepository).save(eq(10L), any(Order.class));
+    ArgumentCaptor<OrderEntity> captor = ArgumentCaptor.forClass(OrderEntity.class);
+    verify(orderRepository).save(captor.capture());
+    OrderEntity captured = captor.getValue();
+
+    assertThat(captured.getTotalPrice()).isEqualTo(15.0);
+    assertThat(captured.getStatus()).isEqualTo(OrderStatus.NEW);
+    assertThat(captured.getProducts()).containsExactly(p1, p2);
+
+    verify(cartRepository).delete(cartEntity);
 
     assertThat(result.getId()).isEqualTo(10L);
-    assertThat(result.getProducts()).hasSize(2);
-    assertThat(result.getTotalPrice()).isEqualTo(15.0);
-    assertThat(result.getStatus()).isEqualTo(OrderStatus.NEW);
-
-    List<Product> sorted =
-        result.getProducts().stream()
-            .sorted(java.util.Comparator.comparing(Product::getId))
-            .toList();
-
-    Product productA = sorted.get(0);
-    Product productB = sorted.get(1);
-
-    assertThat(productA.getId()).isEqualTo(1L);
-    assertThat(productA.getName()).isEqualTo("Toy");
-    assertThat(productA.getDescription()).isEqualTo("Laser");
-    assertThat(productA.getPrice()).isEqualTo(10.0);
-    assertThat(productA.isAvailable()).isTrue();
-    assertThat(productA.getCategory()).isNotNull();
-    assertThat(productA.getCategory().getId()).isEqualTo(1L);
-    assertThat(productA.getCategory().getName()).isEqualTo("Toys");
-    assertThat(productA.getCategory().getDescription()).isEqualTo("Cosmic entertainment");
-
-    assertThat(productB.getId()).isEqualTo(2L);
-    assertThat(productB.getName()).isEqualTo("Snack");
-    assertThat(productB.getDescription()).isEqualTo("Tuna");
-    assertThat(productB.getPrice()).isEqualTo(5.0);
-    assertThat(productB.isAvailable()).isTrue();
-    assertThat(productB.getCategory()).isNotNull();
-    assertThat(productB.getCategory().getId()).isEqualTo(2L);
-    assertThat(productB.getCategory().getName()).isEqualTo("Food");
-    assertThat(productB.getCategory().getDescription()).isEqualTo("Space snacks");
   }
 
   @Test
@@ -150,17 +156,25 @@ class OrderServiceImplTest {
   @Test
   @DisplayName("should update order status successfully")
   void updateOrderStatusShouldChangeStatus() {
-    Order existing = Order.builder().id(1L).status(OrderStatus.NEW).totalPrice(50.0).build();
+    OrderEntity existing = new OrderEntity();
+    existing.setId(1L);
+    existing.setStatus(OrderStatus.NEW);
+    OrderEntity saved = new OrderEntity();
+    saved.setId(1L);
+    saved.setStatus(OrderStatus.PROCESSING);
+
+    Order resultDomain = Order.builder().id(1L).status(OrderStatus.PROCESSING).build();
 
     when(orderRepository.findById(1L)).thenReturn(Optional.of(existing));
-    when(orderRepository.save(eq(1L), any(Order.class))).thenAnswer(inv -> inv.getArgument(1));
+    when(orderRepository.save(existing)).thenReturn(saved);
+    when(orderMapper.toDomain(saved)).thenReturn(resultDomain);
 
     Order result = orderService.updateOrderStatus(1L, "Processing");
 
-    verify(orderRepository).findById(1L);
-    verify(orderRepository).save(eq(1L), any(Order.class));
+    ArgumentCaptor<OrderEntity> captor = ArgumentCaptor.forClass(OrderEntity.class);
+    verify(orderRepository).save(captor.capture());
 
-    assertThat(result.getId()).isEqualTo(1L);
+    assertThat(captor.getValue().getStatus()).isEqualTo(OrderStatus.PROCESSING);
     assertThat(result.getStatus()).isEqualTo(OrderStatus.PROCESSING);
   }
 
@@ -182,5 +196,25 @@ class OrderServiceImplTest {
     orderService.deleteOrder(2L);
 
     verify(orderRepository).deleteById(2L);
+  }
+
+  @Test
+  @DisplayName("should get top selling products using projections")
+  void getTopSellingProductsShouldCallRepository() {
+    int limit = 5;
+    ProductSalesStats statsMock = mock(ProductSalesStats.class);
+    when(statsMock.getProductName()).thenReturn("Top Product");
+    when(statsMock.getSalesCount()).thenReturn(100L);
+
+    List<ProductSalesStats> expectedList = List.of(statsMock);
+
+    when(orderRepository.getTopSellingProducts(any(PageRequest.class))).thenReturn(expectedList);
+
+    List<ProductSalesStats> result = orderService.getTopSellingProducts(limit);
+
+    verify(orderRepository).getTopSellingProducts(eq(PageRequest.of(0, limit)));
+
+    assertThat(result).hasSize(1);
+    assertThat(result.get(0).getProductName()).isEqualTo("Top Product");
   }
 }
