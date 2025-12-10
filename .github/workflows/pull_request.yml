@@ -39,7 +39,7 @@ jobs:
 
       - name: Start WireMock via Docker Compose
         run: |
-          docker compose up -f scripts/docker/docker-compose.yml -d
+          docker compose -f scripts/docker/docker-compose.yml up -d
           sleep 10
           docker ps -a
 
