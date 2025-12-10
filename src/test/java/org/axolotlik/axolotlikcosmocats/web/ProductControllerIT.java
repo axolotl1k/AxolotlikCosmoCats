@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @AutoConfigureMockMvc
 @DisplayName("ProductController integration tests")
+@WithMockUser(roles = "ADMIN")
 class ProductControllerIT extends AbstractIT {
 
   @Autowired private MockMvc mockMvc;
@@ -300,5 +302,34 @@ class ProductControllerIT extends AbstractIT {
     mockMvc.perform(delete("/api/v1/products/{id}", p.getId())).andExpect(status().isNoContent());
 
     verify(productService).deleteProduct(p.getId());
+  }
+
+  @Test
+  @DisplayName("should return 403 Forbidden when USER tries to create product")
+  @WithMockUser(roles = "USER")
+  @SneakyThrows
+  void shouldReturnForbiddenForUserCreate() {
+    ProductRequestDto request = ProductRequestDto.builder()
+            .name("Forbidden Star Item")
+            .description("Desc")
+            .price(10.0)
+            .categoryId(1L)
+            .available(true)
+            .build();
+
+    mockMvc.perform(post("/api/v1/products")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isForbidden());
+  }
+
+  @Test
+  @DisplayName("should return 403 Forbidden when USER tries to delete product")
+  @WithMockUser(roles = "USER")
+  @SneakyThrows
+  void shouldReturnForbiddenForUserDelete() {
+    long productId = 123L;
+    mockMvc.perform(delete("/api/v1/products/{id}", productId))
+            .andExpect(status().isForbidden());
   }
 }

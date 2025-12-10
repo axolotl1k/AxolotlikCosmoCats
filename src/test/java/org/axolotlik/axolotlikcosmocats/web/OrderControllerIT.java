@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.ArrayList;
@@ -37,6 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @AutoConfigureMockMvc
 @DisplayName("OrderController integration tests (full field coverage)")
+@WithMockUser(roles = "ADMIN")
 class OrderControllerIT extends AbstractIT {
 
   @Autowired private MockMvc mockMvc;
@@ -61,6 +63,7 @@ class OrderControllerIT extends AbstractIT {
   @Test
   @SneakyThrows
   @DisplayName("should get all orders (200 OK)")
+  @WithMockUser(roles = "ADMIN")
   void shouldGetAllOrders() {
     var cat =
         categoryRepository.save(
@@ -325,5 +328,36 @@ class OrderControllerIT extends AbstractIT {
         .andExpect(jsonPath("$[1].salesCount").value(1));
 
     verify(orderService).getTopSellingProducts(5);
+  }
+
+  @Test
+  @DisplayName("should return 403 Forbidden when USER tries to get ALL orders")
+  @WithMockUser(roles = "USER")
+  @SneakyThrows
+  void shouldReturnForbiddenForUserGetAllOrders() {
+    mockMvc.perform(get("/api/v1/orders"))
+            .andExpect(status().isForbidden());
+  }
+
+  @Test
+  @DisplayName("should return 403 Forbidden when USER tries to get stats")
+  @WithMockUser(roles = "USER")
+  @SneakyThrows
+  void shouldReturnForbiddenForUserGetStats() {
+    mockMvc.perform(get("/api/v1/orders/stats/top"))
+            .andExpect(status().isForbidden());
+  }
+
+  @Test
+  @DisplayName("should return 403 Forbidden when USER tries to update status")
+  @WithMockUser(roles = "USER")
+  @SneakyThrows
+  void shouldReturnForbiddenForUserUpdateStatus() {
+    OrderStatusUpdateRequestDto request = OrderStatusUpdateRequestDto.builder().status("SHIPPED").build();
+
+    mockMvc.perform(patch("/api/v1/orders/{id}", 1L)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isForbidden());
   }
 }

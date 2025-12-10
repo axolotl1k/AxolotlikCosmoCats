@@ -37,12 +37,21 @@ jobs:
       - name: Grant execute permission for Gradlew
         run: chmod +x ./gradlew
 
+      - name: Start WireMock via Docker Compose
+        run: |
+          docker compose -f scripts/docker/docker-compose.yml up -d
+          sleep 10
+          docker ps -a
+
       # Run Gradle build and tests with coverage
       - name: Build with Gradle
         uses: gradle/gradle-build-action@v3
         with:
           cache-disabled: true
           generate-job-summary: false
+
+      - name: Run tests and generate coverage report
+        run: ./gradlew clean test integrationTest jacocoTestReport --info
 
       # Upload the JaCoCo test coverage report
       - name: Upload coverage report

@@ -8,6 +8,7 @@ import org.axolotlik.axolotlikcosmocats.dto.category.CategoryResponseDto;
 import org.axolotlik.axolotlikcosmocats.service.CategoryService;
 import org.axolotlik.axolotlikcosmocats.service.mapper.CategoryMapper;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -18,23 +19,27 @@ public class CategoryController {
   private final CategoryMapper categoryMapper;
 
   @GetMapping
+  @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
   public CategoryListResponseDto getAll() {
     return categoryMapper.toCategoryListResponseDto(categoryService.getAllCategories());
   }
 
   @GetMapping("/{id}")
+  @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
   public CategoryResponseDto getById(@PathVariable Long id) {
     return categoryMapper.toCategoryResponseDto(categoryService.getCategoryById(id));
   }
 
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
+  @PreAuthorize("hasRole('ADMIN')")
   public CategoryResponseDto create(@RequestBody @Valid CategoryRequestDto dto) {
     return categoryMapper.toCategoryResponseDto(
         categoryService.createCategory(categoryMapper.toCategory(dto)));
   }
 
   @PutMapping("/{id}")
+  @PreAuthorize("hasRole('ADMIN')")
   public CategoryResponseDto update(
       @PathVariable Long id, @RequestBody @Valid CategoryRequestDto dto) {
     return categoryMapper.toCategoryResponseDto(
@@ -43,6 +48,7 @@ public class CategoryController {
 
   @DeleteMapping("/{id}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
+  @PreAuthorize("hasRole('ADMIN')")
   public void delete(@PathVariable Long id) {
     categoryService.deleteCategory(id);
   }
