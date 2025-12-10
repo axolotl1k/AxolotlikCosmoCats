@@ -37,6 +37,12 @@ jobs:
       - name: Grant execute permission for Gradlew
         run: chmod +x ./gradlew
 
+      - name: Start WireMock via Docker Compose
+        run: |
+          docker compose up -f scripts/docker/docker-compose.yml -d
+          sleep 10
+          docker ps -a
+
       # Run Gradle build and tests with coverage
       - name: Build with Gradle
         uses: gradle/gradle-build-action@v3

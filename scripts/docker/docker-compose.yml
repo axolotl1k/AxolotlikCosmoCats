@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  wiremock:
+    image: wiremock/wiremock:latest
+    container_name: cosmo-auth-mock
+    ports:
+      - "8090:8080"
+    volumes:
+      - ./wiremock:/home/wiremock
+    command: ["--verbose", "--global-response-templating"]

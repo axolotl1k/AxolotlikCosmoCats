@@ -1,40 +1,93 @@
 spring:
   profiles:
-    active: local
+    active: prod
+
   application:
     name: AxolotlikCosmoCats
+
   datasource:
-    url: jdbc:postgresql://localhost:5432/cosmocats_db
-    username: postgres
-    password: password
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
+
   jpa:
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: validate
-    show-sql: true
+    show-sql: false
+
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${AUTH_JWK_SET_URI}
+
+logging:
+  level:
+    org.springframework.security: INFO
+
+application:
+  security:
+    api-key-header: X-Api-Key
+    keys:
+      - value: ${API_KEY_USER}
+        role: ROLE_USER
+
+      - value: ${API_KEY_ADMIN}
+        role: ROLE_ADMIN
+
+  feature:
+    cosmo-cats: true
+    kitty-products: false
 
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
     url: /api-specs/market-api-spec.yml
     disable-swagger-default-url: true
+
   api-docs:
     enabled: true
 
-application:
-  feature:
-    cosmo-cats: true
-    kitty-products: false
 
 ---
 spring:
   config:
     activate:
-      on-profile: dev
+      on-profile: dev, test
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/cosmocats_db
+    username: postgres
+    password: Root123!
+
+  jpa:
+    show-sql: true
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:8090/.well-known/jwks.json
+
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+    org.springframework.web: DEBUG
+
 application:
+  security:
+    keys:
+      - value: "user-secret-local"
+        role: ROLE_USER
+      - value: "admin-secret-local"
+        role: ROLE_ADMIN
+
   feature:
     cosmo-cats: false
