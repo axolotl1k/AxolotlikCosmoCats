@@ -32,9 +32,17 @@ src/
 ├── main/
 │ ├── java/org/axolotlik/axolotlikcosmocats/
 │ │ ├── common/                             # Загальні утиліти, enum-и
-│ │ ├── config/                             # Конфігурації Spring / Swagger
+│ │ ├── config/                             # Конфігурації Spring / Swagger / FeatureToggleProperties
 │ │ ├── domain/                             # Доменні моделі (Product, Category, Order, Cart)
 │ │ ├── dto/                                # DTO для вхідних і вихідних даних
+│ │ ├── featuretoggle/                      # Реалізація Feature Toggles (AOP + конфігурація)
+│ │ │   ├── annotation/                     # Анотації для фіч
+│ │ │   ├── aspect/                         # Аспект для перевірки стану фіч перед виконанням
+│ │ │   ├── exception/                      # Кастомний ексцепш для виключених фіч
+│ │ │   ├── service/                        # Сервіс керування фічами
+│ │ │   └── FeatureToggles.java             # Enum зі списком доступних фіч
+│ │ ├── config/                             # Конфігурації Spring / Swagger / FeatureToggleProperties
+│ │ ├── web/                                # REST контролери (в т.ч. CosmoCatsController)
 │ │ ├── repository/                         # In-Memory репозиторії для зберігання даних у колекціях
 │ │ ├── service/                            # Бізнес-логіка (CRUD, валідації)
 │ │ ├── util/                               # Кастомні валідації, хелпери
@@ -44,6 +52,7 @@ src/
 │   └── api-specs/                          # Swagger / OpenAPI контракт
 │
 └── test/java/org/axolotlik/axolotlikcosmocats/
+    ├── featuretoggle/                      # Тестові анотації та розширення JUnit для FeatureToggle
     ├── repository/                         # Unit-тести для InMemoryRepository
     ├── service/impl/                       # Unit-тести для сервісного шару
     └── web/                                # Integration-тести для контролерів
@@ -145,11 +154,11 @@ src/
 ```
 Test Coverage:
     - Class Coverage: 100%
-    - Method Coverage: 95.3%
-    - Branch Coverage: 66.7%
-    - Line Coverage: 94.2%
-    - Instruction Coverage: 95.1%
-    - Complexity Coverage: 79.6%
+    - Method Coverage: 95.9%
+    - Branch Coverage: 67.6%
+    - Line Coverage: 94.8%
+    - Instruction Coverage: 95.6%
+    - Complexity Coverage: 81.8%
 ``` 
 
 **TestCoverage**
@@ -158,10 +167,10 @@ Test Coverage:
 Test Coverage:
     - Class Coverage: 100%
     - Method Coverage: 100%
-    - Branch Coverage: 69.4%
-    - Line Coverage: 96%
-    - Instruction Coverage: 97.5%
-    - Complexity Coverage: 84.5%
+    - Branch Coverage: 70.3%
+    - Line Coverage: 96.4%
+    - Instruction Coverage: 97.8%
+    - Complexity Coverage: 86.2%
 ```
 
 ---
@@ -177,6 +186,55 @@ Test Coverage:
 ```
 build/reports/coverage/index.html
 ```
+
+---
+
+## 🚀 Лабораторна 2 — Feature Toggles (Spring AOP)
+
+### 🎯 Мета
+
+Реалізувати систему **Feature Toggle** для керування функціональністю застосунку залежно від середовища (environment).
+
+---
+
+### ⚙️ Реалізація
+
+* Додано **`FeatureToggleService`** для зберігання та керування станом фіч.
+* Налаштовано **`FeatureToggleProperties`**, що читає YAML-конфігурацію (`application.feature.*`).
+* Створено **аспект `FeatureToggleAspect`**, який:
+
+    * перевіряє активність фіч перед виконанням методу;
+    * кидає `FeatureNotAvailableException`, якщо фіча вимкнена;
+    * інтегрований через Spring AOP (`@Aspect`).
+
+---
+
+### 🐱 Новий функціонал
+
+* Створено **CosmoCatsController** з ендпоінтами:
+
+    * `GET /api/v1/galactic-citizen-registry` — отримати всіх котиків (працює лише якщо фіча активна);
+    * `GET /api/v1/galactic-citizen-registry/{name}` — отримати конкретного котика;
+* Додано виняток **FeatureNotAvailableException** з кодом **503 Service Unavailable**;
+* Розширено **GlobalExceptionHandler** для обробки цієї помилки.
+
+---
+
+### 🤪 Тестування (Feature Toggle)
+
+* Створено розширення **`FeatureToggleExtension`** для JUnit 5, яке:
+
+    * автоматично вмикає / вимикає фічу перед кожним тестом;
+    * повертає конфігурацію до початкового стану після тесту.
+* Додано кастомні анотації:
+
+    * `@EnabledFeatureToggle`
+    * `@DisabledFeatureToggle`
+* Написано **інтеграційні тести для CosmoCatsController**:
+
+    * ✅ `200 OK` — коли фіча активна;
+    * 🚫 `503 Service Unavailable` — коли фіча вимкнена;
+    * ⚠️ `404 Not Found` — коли кота не знайдено;
 
 ## ✨ Автор
 

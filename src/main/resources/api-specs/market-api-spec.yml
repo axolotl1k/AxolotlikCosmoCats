@@ -477,6 +477,69 @@ paths:
         '204':
           description: Cart deleted successfully (idempotent).
 
+    # ==============================
+  # 🐱 COSMO CATS
+  # ==============================
+  /api/v1/cosmo-cats:
+    get:
+      summary: Get all Cosmo Cats
+      description: >
+        Returns a list of Cosmo Cat names.  
+        This endpoint is controlled by the `cosmo-cats.enabled` feature toggle.
+      tags: [ Cosmo Cats ]
+      responses:
+        '200':
+          description: Successfully retrieved list of Cosmo Cats.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                example: [ "Luna", "Comet", "Nebula", "Orion" ]
+        '503':
+          description: Feature not available (when toggle is disabled).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+
+  /api/v1/cosmo-cats/{name}:
+    get:
+      summary: Get Cosmo Cat by name
+      description: >
+        Returns the name of a specific Cosmo Cat if it exists.  
+        Controlled by the same feature toggle (`cosmo-cats.enabled`).
+      tags: [ Cosmo Cats ]
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Name of the Cosmo Cat.
+      responses:
+        '200':
+          description: Successfully retrieved the Cosmo Cat name.
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "Luna"
+        '404':
+          description: Cosmo Cat not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        '503':
+          description: Feature not available (when toggle is disabled).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+
+
 components:
   schemas:
     # 🛒 PRODUCTS
@@ -663,36 +726,64 @@ components:
           example: [ 1 ]
           description: List of product IDs to remove from the cart.
 
-
     # ⚠️ ERRORS
-    ValidationErrorDto:
-      type: object
-      properties:
-        status:
-          type: integer
-          example: 400
-        error:
-          type: string
-          example: "Bad Request"
-        message:
-          type: string
-          example: "Field 'price' must be greater than 0."
-        path:
-          type: string
-          example: "/api/v1/products"
-
     ErrorResponseDto:
       type: object
       properties:
+        type:
+          type: string
+          example: "feature-unavailable"
+          description: "Machine-readable error type"
+        title:
+          type: string
+          example: "Feature Unavailable"
+          description: "Short human-readable summary of the error"
         status:
           type: integer
-          example: 404
-        error:
+          example: 503
+          description: "HTTP status code"
+        detail:
           type: string
-          example: "Not Found"
-        message:
+          example: "Feature 'cosmo-cats.enabled' is not available right now."
+          description: "Detailed human-readable explanation"
+        instance:
           type: string
-          example: "Category with ID 15 not found."
-        path:
+          example: "/api/v1/cosmo-cats"
+          description: "Request path where the error occurred"
+
+    ValidationErrorDto:
+      type: object
+      properties:
+        type:
+          type: string
+          example: "validation-error"
+          description: "Machine-readable identifier of the validation error"
+        title:
+          type: string
+          example: "Validation Failed"
+          description: "Human-readable summary of the validation failure"
+        status:
+          type: integer
+          example: 400
+          description: "HTTP status code"
+        instance:
           type: string
           example: "/api/v1/products"
+          description: "The request path where the error occurred"
+        errors:
+          type: array
+          description: "List of validation field errors"
+          items:
+            $ref: '#/components/schemas/ValidationFieldError'
+
+    ValidationFieldError:
+      type: object
+      properties:
+        field:
+          type: string
+          example: "price"
+          description: "The field that failed validation"
+        reason:
+          type: string
+          example: "must be greater than or equal to 0.01"
+          description: "Human-readable explanation of the validation issue"

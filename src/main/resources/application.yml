@@ -1,4 +1,8 @@
-spring.application.name: AxolotlikCosmoCats
+spring:
+  profiles:
+    active: local
+  application:
+    name: AxolotlikCosmoCats
 
 springdoc:
   swagger-ui:
@@ -8,3 +12,16 @@ springdoc:
   api-docs:
     enabled: true
 
+application:
+  feature:
+    galactic-citizen-registry: true
+    deep-space-marketplace: false
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+application:
+  feature:
+    galactic-citizen-registry: false
