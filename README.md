@@ -14,6 +14,8 @@
 
 - **Java 21**
 - **Spring Boot 3.3.4**
+- **Spring Security** — авторизація та аутентифікація
+- **OAuth2 Resource Server** — валідація JWT токенів
 - **Gradle**
 - **MapStruct** — мапінг між доменними об'єктами та DTO
 - **Lombok** — скорочення шаблонного коду
@@ -32,30 +34,28 @@ src/
 ├── main/
 │ ├── java/org/axolotlik/axolotlikcosmocats/
 │ │ ├── common/                             # Загальні утиліти, enum-и
-│ │ ├── config/                             # Конфігурації Spring / Swagger / FeatureToggleProperties
-│ │ ├── domain/                             # Доменні моделі (Product, Category, Order, Cart)
-│ │ ├── dto/                                # DTO для вхідних і вихідних даних
-│ │ ├── featuretoggle/                      # Реалізація Feature Toggles (AOP + конфігурація)
-│ │ │   ├── annotation/                     # Анотації для фіч
-│ │ │   ├── aspect/                         # Аспект для перевірки стану фіч перед виконанням
-│ │ │   ├── exception/                      # Кастомний ексцепш для виключених фіч
-│ │ │   ├── service/                        # Сервіс керування фічами
-│ │ │   └── FeatureToggles.java             # Enum зі списком доступних фіч
-│ │ ├── config/                             # Конфігурації Spring / Swagger / FeatureToggleProperties
-│ │ ├── web/                                # REST контролери (в т.ч. CosmoCatsController)
-│ │ ├── repository/                         # In-Memory репозиторії для зберігання даних у колекціях
-│ │ ├── service/                            # Бізнес-логіка (CRUD, валідації)
-│ │ ├── util/                               # Кастомні валідації, хелпери
-│ │ ├── web/                                # REST контролери, глобальний обробник помилок
-│ │ └── AxolotlikCosmoCatsApplication.java  # Головний клас застосунку
+│ │ ├── config/                             # Конфігурації Spring / Swagger / FeatureToggle
+│ │ │   └── security/                       # Security Config (Filters, Properties, Handlers)
+│ │ ├── domain/                             # Доменні моделі (чисті Java об'єкти)
+│ │ ├── dto/                                # DTO для API
+│ │ ├── featuretoggle/                      # Система Feature Toggles (AOP)
+│ │ ├── repository/                         # Шар доступу до даних + Інтерфейси Spring Data JPA
+│ │ │   ├── entity/                         # JPA Entities (відповідають таблицям БД)
+│ │ │   └── projection/                     # JPA Projections (для звітів)
+│ │ ├── service/                            # Бізнес-логіка (@Transactional)
+│ │ │   ├── impl/                           # Реалізація сервісів
+│ │ │   ├── exception/                      # Винятки
+│ │ │   └── mapper/                         # Мапери DTO <-> Domain та Domain <-> Entity
+│ │ ├── util/                               # Кастомні валідації
+│ │ └── web/                                # REST контролери, обробка помилок
 │ └── resources/
-│   └── api-specs/                          # Swagger / OpenAPI контракт
+│   ├── api-specs/                          # Swagger контракт
+│   └── db/changelog/                       # Liquibase міграції (XML/YAML)
 │
 └── test/java/org/axolotlik/axolotlikcosmocats/
-    ├── featuretoggle/                      # Тестові анотації та розширення JUnit для FeatureToggle
-    ├── repository/                         # Unit-тести для InMemoryRepository
-    ├── service/impl/                       # Unit-тести для сервісного шару
-    └── web/                                # Integration-тести для контролерів
+    ├── featuretoggle/                      # Тести для Feature Toggles
+    ├── service/impl/                       # Unit-тести сервісів (Mockito)
+    └── web/                                # Integration-тести (Testcontainers + MockMvc)
 ```
 
 ---
@@ -235,6 +235,87 @@ build/reports/coverage/index.html
     * ✅ `200 OK` — коли фіча активна;
     * 🚫 `503 Service Unavailable` — коли фіча вимкнена;
     * ⚠️ `404 Not Found` — коли кота не знайдено;
+
+## 🗄️ Лабораторна 3 — Інтеграція з БД
+
+### 1. Проєктування та Міграції (Liquibase)
+Схема бази даних керується через **Liquibase**. Реалізовано версіонування змін:
+- **`001-initial-schema.yaml`**: Створення таблиць `products`, `categories`, `orders`, `carts` та зв'язків (Foreign Keys). Використано `incrementBy: 50` для оптимізації Sequence генераторів.
+- **`002-constraints-and-indexes.yaml`**:
+  - **Unique Constraints**: Забезпечено унікальність імені продукту в межах категорії.
+  - **Indexes**: Додано індекси для полів, за якими часто йде пошук (`name`).
+
+### 2. Spring Data JPA & Entities
+- Створено **JPA сутності** з анотаціями `@Entity`, `@Table`, `@ManyToOne`, `@ManyToMany`.
+- Налаштовано **Lazy Loading** для колекцій, щоб уникнути проблем з продуктивністю.
+- Реалізовано **Referential Integrity**: видалення категорії, яка містить продукти, блокується базою даних (409 Conflict), що захищає дані від випадкової втрати.
+
+### 3. Транзакції
+- Сервісний шар (`ServiceImpl`) анотовано **`@Transactional`**.
+- Використано оптимізацію `readOnly = true` для методів читання (`GET`), що покращує швидкодію Hibernate.
+
+### 4. Projections та Custom Queries (+2 бали)
+Реалізовано аналітичний звіт "Топ товарів за продажами":
+- **JPQL Запит**: Використано агрегацію `COUNT` та групування `GROUP BY` на рівні бази даних.
+- **Projections**: Створено інтерфейс `ProductSalesStats`, щоб витягувати з БД тільки необхідні поля (назва + кількість), а не цілі сутності.
+- **Ендпоінт**: `GET /api/v1/orders/stats/top?limit=5`
+
+---
+
+## 🐋 Тестування з Docker
+
+Реалізовано повноцінні **інтеграційні тести** з використанням **Testcontainers**:
+- Створено базовий клас `AbstractIT`, який піднімає контейнер `postgres:16-alpine`.
+- Тести запускаються на **реальній базі даних**, що гарантує сумісність SQL-запитів та міграцій.
+- У тестах використовується прямий доступ до репозиторіїв для підготовки даних (Arrange phase), що ізолює тестування контролерів від логіки сервісів.
+
+## 🔐 Лабораторна 4 — Spring Security
+
+### 🛡️ Реалізований функціонал
+
+#### 1. Гібридна Аутентифікація
+Застосунок підтримує два способи входу (реалізовано через ланцюжок фільтрів `SecurityFilterChain`):
+
+* **API Key Authentication (Custom Filter):**
+  * Реалізовано власний фільтр `ApiKeyAuthenticationFilter`.
+  * Перевіряє наявність заголовка `X-Api-Key`.
+  * Підтримує різні ключі для різних ролей (User/Admin), які налаштовуються через `application.yml` (змінні середовища на проді, прості заглушки на деві).
+
+* **OAuth2 JWT Authentication:**
+  * Підключено `OAuth2 Resource Server`.
+  * Токени валідуються через перевірку підпису (Signature) за допомогою **JWKS** (JSON Web Key Set).
+  * Локально емулюється через **WireMock**, який віддає публічні ключі.
+
+#### 2. Авторизація (Role-Based Access Control)
+Налаштовано конвертер `JwtAuthenticationConverter`, який мапить ролі з токена/ключа у формат Spring Security (`ROLE_USER`, `ROLE_ADMIN`).
+
+| Роль | Доступні дії |
+| :--- | :--- |
+| **USER** | Перегляд товарів, категорій. Створення та управління власним кошиком і замовленням. |
+| **ADMIN** | Повний доступ: створення/видалення товарів та категорій, перегляд усіх замовлень, аналітика продажів. |
+
+Доступ контролюється на рівні методів контролера через анотацію `@PreAuthorize`.
+
+#### 3. Обробка помилок безпеки
+Замість стандартних сторінок помилок реалізовано повернення JSON у форматі **RFC 7807 ProblemDetail**:
+* **401 Unauthorized** — обробляється `CustomAuthenticationEntryPoint`.
+* **403 Forbidden** — обробляється `CustomAccessDeniedHandler`.
+
+---
+
+### 🧪 Тестування безпеки
+
+Для тестування Security-шару реалізовано:
+
+1.  **AuthenticationIT:** Окремий набір тестів, що перевіряє:
+  * Вхід без креденишлів (401).
+  * Успішний вхід по API Key.
+  * Успішний вхід по Mock JWT.
+  * Відмову в доступі при недостатніх правах (403).
+
+2.  **Інтеграція в наявні тести:**
+  * Використано `@WithMockUser(roles = "ADMIN")` для емуляції авторизованого користувача в тестах бізнес-логіки.
+  * Додано негативні сценарії (спроба видалення товару звичайним юзером -> 403 Forbidden).
 
 ## ✨ Автор
 

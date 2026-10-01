@@ -68,4 +68,16 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(detail);
   }
+
+  // 409 - Data integrity violation errors (@NotNull, @Size, etc.)
+  @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+  ProblemDetail handleDataIntegrityViolation(org.springframework.dao.DataIntegrityViolationException ex) {
+    ProblemDetail detail = ProblemDetail.forStatusAndDetail(
+            HttpStatus.CONFLICT,
+            "Cannot delete resource because it is referenced by other records."
+    );
+    detail.setTitle("Data Integrity Violation");
+    detail.setType(URI.create("data-integrity-error"));
+    return detail;
+  }
 }
