@@ -1,0 +1,49 @@
+databaseChangeLog:
+  - changeSet:
+      id: 3-unique-product-in-category
+      author: axolotlik
+      changes:
+        - addUniqueConstraint:
+            tableName: products
+            columnNames: name, category_id
+            constraintName: uq_product_name_category
+
+  - changeSet:
+      id: 4-unique-category-name
+      author: axolotlik
+      changes:
+        - addUniqueConstraint:
+            tableName: categories
+            columnNames: name
+            constraintName: uq_category_name
+
+
+  - changeSet:
+      id: 5-unique-join-tables
+      author: axolotlik
+      changes:
+        - createIndex:
+            tableName: carts_products
+            indexName: idx_carts_products_lookup
+            columns:
+              - column:
+                  name: cart_id
+              - column:
+                  name: product_id
+
+  - changeSet:
+      id: 6-search-indexes
+      author: axolotlik
+      changes:
+        - createIndex:
+            tableName: products
+            indexName: idx_product_name
+            columns:
+              - column:
+                  name: name
+        - createIndex:
+            tableName: categories
+            indexName: idx_category_name
+            columns:
+              - column:
+                  name: name

@@ -1,6 +1,6 @@
 package org.axolotlik.axolotlikcosmocats.web;
 
-import jakarta.validation.ConstraintViolationException;
+import org.axolotlik.axolotlikcosmocats.featuretoggle.exception.FeatureNotAvailableException;
 import org.axolotlik.axolotlikcosmocats.service.exception.NotFoundException;
 import org.axolotlik.axolotlikcosmocats.web.exception.ValidationError;
 import org.springframework.http.HttpHeaders;
@@ -27,6 +27,16 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     ProblemDetail detail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
     detail.setTitle("Resource Not Found");
     detail.setType(URI.create("not-found"));
+    return detail;
+  }
+
+  // 503 - feature disabled
+  @ExceptionHandler(FeatureNotAvailableException.class)
+  ProblemDetail handleFeatureNotAvailable(FeatureNotAvailableException ex) {
+    ProblemDetail detail =
+        ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage());
+    detail.setTitle("Feature Unavailable");
+    detail.setType(URI.create("feature-unavailable"));
     return detail;
   }
 
@@ -57,5 +67,17 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     detail.setProperty("errors", allErrors);
 
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(detail);
+  }
+
+  // 409 - Data integrity violation errors (@NotNull, @Size, etc.)
+  @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+  ProblemDetail handleDataIntegrityViolation(org.springframework.dao.DataIntegrityViolationException ex) {
+    ProblemDetail detail = ProblemDetail.forStatusAndDetail(
+            HttpStatus.CONFLICT,
+            "Cannot delete resource because it is referenced by other records."
+    );
+    detail.setTitle("Data Integrity Violation");
+    detail.setType(URI.create("data-integrity-error"));
+    return detail;
   }
 }
