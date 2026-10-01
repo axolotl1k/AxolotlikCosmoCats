@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.ArrayList;
@@ -30,6 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @AutoConfigureMockMvc
 @DisplayName("CategoryController integration tests")
+@WithMockUser(roles = "ADMIN")
 class CategoryControllerIT extends AbstractIT {
 
   @Autowired private MockMvc mockMvc;
@@ -223,5 +225,30 @@ class CategoryControllerIT extends AbstractIT {
 
     org.assertj.core.api.Assertions.assertThat(categoryRepository.existsById(category.getId()))
         .isTrue();
+  }
+
+  @Test
+  @DisplayName("should return 403 Forbidden when USER tries to create category")
+  @WithMockUser(roles = "USER")
+  @SneakyThrows
+  void shouldReturnForbiddenForUserCreate() {
+    CategoryRequestDto request = CategoryRequestDto.builder()
+            .name("Forbidden Cat")
+            .description("Desc")
+            .build();
+
+    mockMvc.perform(post("/api/v1/categories")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isForbidden());
+  }
+
+  @Test
+  @DisplayName("should return 403 Forbidden when USER tries to delete category")
+  @WithMockUser(roles = "USER")
+  @SneakyThrows
+  void shouldReturnForbiddenForUserDelete() {
+    mockMvc.perform(delete("/api/v1/categories/{id}", 1L))
+            .andExpect(status().isForbidden());
   }
 }
