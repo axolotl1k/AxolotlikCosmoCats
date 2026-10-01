@@ -4,8 +4,4 @@ public class OrderNotFoundException extends NotFoundException {
   public OrderNotFoundException(Long id) {
     super("Order", id);
   }
-
-  public OrderNotFoundException(String message) {
-    super(message);
-  }
 }
