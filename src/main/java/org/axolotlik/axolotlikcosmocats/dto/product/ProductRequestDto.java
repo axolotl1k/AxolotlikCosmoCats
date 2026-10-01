@@ -8,13 +8,20 @@ import org.axolotlik.axolotlikcosmocats.dto.validation.CosmicWordCheck;
 @Value
 @Builder
 public class ProductRequestDto {
-  @NotBlank @CosmicWordCheck String name;
+
+  @NotBlank(message = "must not be blank")
+  @CosmicWordCheck
+  String name;
+
   String description;
 
-  @NotNull
-  @DecimalMin("0.01")
+  @NotNull(message = "must not be null")
+  @DecimalMin(value = "0.01", message = "must be greater than or equal to 0.01")
   Double price;
 
-  @NotNull Long categoryId;
+  @NotNull(message = "must not be null")
+  Long categoryId;
+
+  @AssertTrue(message = "must be true to indicate availability")
   boolean available;
 }

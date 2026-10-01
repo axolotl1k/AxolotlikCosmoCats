@@ -1,0 +1,16 @@
+{
+  "keys": [
+    {
+      "alg": "RS256",
+      "e": "AQAB",
+      "ext": true,
+      "key_ops": [
+        "verify"
+      ],
+      "kty": "RSA",
+      "n": "5zGdN4jW9AlrPl55lBGVJ0YKfMCWRuytzd-uNHxgO_b7KtFmEGDPPZcsfbM85TECVVdGYOIvUU5Jtj3enbOSVmAf_LJ7G-MGH6N0wWu81yyZu173SF6qiKHgudKUIZ_lMSOPrWqm7B9_JPY6zaEBy_wAI96MJ92ySRhEyCbJGnjZxE116qDmSLzTm09JjFS2B7XoiqTjoR-vJ4tU_WUBCIY2vZLMEfWWJSpuoch4hmCrZnKZa8J1fpjfZ4tkV1TGzrFmMBVMLE6mtmUIycZe9ncFpprqU5PcxM5T2-VPwSY4fpC9oR_Tr6M90gVtPW84ta3YfTjJibpScpI92mskKw",
+      "kid": "my-cosmo-lab-key",
+      "use": "sig"
+    }
+  ]
+}
