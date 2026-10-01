@@ -11,20 +11,20 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/cosmo-cats")
+@RequestMapping("/api/v1/galactic-citizen-registry")
 @RequiredArgsConstructor
 public class CosmoCatController {
 
   private final CosmoCatService cosmoCatService;
 
-  @FeatureToggle(FeatureToggles.COSMO_CATS)
+  @FeatureToggle(FeatureToggles.GALACTIC_CITIZEN_REGISTRY)
   @GetMapping
   @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
   public ResponseEntity<List<String>> getCosmoCats() {
     return ResponseEntity.ok(cosmoCatService.getCosmoCats());
   }
 
-  @FeatureToggle(FeatureToggles.COSMO_CATS)
+  @FeatureToggle(FeatureToggles.GALACTIC_CITIZEN_REGISTRY)
   @GetMapping("/{name}")
   @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
   public ResponseEntity<String> getCosmoCat(@PathVariable String name) {

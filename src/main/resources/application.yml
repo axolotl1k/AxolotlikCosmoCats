@@ -90,4 +90,4 @@ application:
         role: ROLE_ADMIN
 
   feature:
-    cosmo-cats: false
+    galactic-citizen-registry: false

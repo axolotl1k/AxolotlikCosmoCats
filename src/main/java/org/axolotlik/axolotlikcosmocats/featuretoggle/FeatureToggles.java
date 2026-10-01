@@ -4,8 +4,9 @@ import lombok.Getter;
 
 @Getter
 public enum FeatureToggles {
-  COSMO_CATS("cosmo-cats"),
-  KITTY_PRODUCTS("kitty-products");
+  //змінив імена фіч, однак використання таке ж саме
+  GALACTIC_CITIZEN_REGISTRY("galactic-citizen-registry"),
+  DEEP_SPACE_MARKETPLACE("deep-space-marketplace");
 
   private final String featureName;
 

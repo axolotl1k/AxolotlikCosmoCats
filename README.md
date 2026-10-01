@@ -213,8 +213,8 @@ build/reports/coverage/index.html
 
 * Створено **CosmoCatsController** з ендпоінтами:
 
-    * `GET /api/v1/cosmo-cats` — отримати всіх котиків (працює лише якщо фіча активна);
-    * `GET /api/v1/cosmo-cats/{name}` — отримати конкретного котика;
+    * `GET /api/v1/galactic-citizen-registry` — отримати всіх котиків (працює лише якщо фіча активна);
+    * `GET /api/v1/galactic-citizen-registry/{name}` — отримати конкретного котика;
 * Додано виняток **FeatureNotAvailableException** з кодом **503 Service Unavailable**;
 * Розширено **GlobalExceptionHandler** для обробки цієї помилки.
 

@@ -7,7 +7,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class FeatureToggleService {
-
+  // ConcurrentHashMap гарантує thread-safety при одночасному читанні/записі.
+  // Це критично, бо сервіс працює в багатопотоковому середовищі,
+  // і зміна стану фічі в рантаймі не повинна ламати запити інших користувачів.
   private final ConcurrentHashMap<String, Boolean> featureToggles;
 
   public FeatureToggleService(FeatureToggleProperties featureToggleProperties) {
